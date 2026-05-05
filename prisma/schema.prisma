@@ -1,0 +1,205 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  password      String?
+  balance       Float     @default(0)
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  userCards     UserCard[]
+  transactions  Transaction[]
+  openings      CaseOpening[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CardCase {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  price       Float
+  tier        CaseTier @default(STANDARD)
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  cardCount   Int      @default(5)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  caseCards   CaseCard[]
+  openings    CaseOpening[]
+}
+
+model Card {
+  id          String      @id @default(cuid())
+  name        String
+  imageUrl    String?
+  rarity      CardRarity  @default(COMMON)
+  value       Float
+  pokemonType PokemonType @default(NORMAL)
+  setName     String?
+  cardNumber  String?
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  caseCards   CaseCard[]
+  userCards   UserCard[]
+  openingCards OpeningCard[]
+}
+
+model CaseCard {
+  id       String @id @default(cuid())
+  caseId   String
+  cardId   String
+  dropRate Float  // 0-100 percentage
+
+  case     CardCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  card     Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, cardId])
+}
+
+model UserCard {
+  id         String   @id @default(cuid())
+  userId     String
+  cardId     String
+  obtainedAt DateTime @default(now())
+  soldAt     DateTime?
+  sold       Boolean  @default(false)
+
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card       Card @relation(fields: [cardId], references: [id])
+}
+
+model CaseOpening {
+  id        String        @id @default(cuid())
+  userId    String
+  caseId    String
+  totalCost Float
+  createdAt DateTime      @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  case         CardCase      @relation(fields: [caseId], references: [id])
+  openingCards OpeningCard[]
+}
+
+model OpeningCard {
+  id         String @id @default(cuid())
+  openingId  String
+  cardId     String
+
+  opening    CaseOpening @relation(fields: [openingId], references: [id], onDelete: Cascade)
+  card       Card        @relation(fields: [cardId], references: [id])
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  amount      Float
+  type        TransactionType
+  description String?
+  stripeId    String?
+  createdAt   DateTime        @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CardRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+enum PokemonType {
+  NORMAL
+  FIRE
+  WATER
+  GRASS
+  ELECTRIC
+  ICE
+  FIGHTING
+  POISON
+  GROUND
+  FLYING
+  PSYCHIC
+  BUG
+  ROCK
+  GHOST
+  DRAGON
+  DARK
+  STEEL
+  FAIRY
+}
+
+enum CaseTier {
+  STARTER
+  STANDARD
+  PREMIUM
+  ELITE
+  LEGENDARY
+}
+
+enum TransactionType {
+  DEPOSIT
+  PURCHASE
+  SALE
+  REFUND
+}
