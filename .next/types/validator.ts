@@ -50,7 +50,7 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 // Validate ../../src/app/Privacy/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/Privacy">> = Specific
-  const handler = {} as typeof import("../../src/app/Privacy/page.js")
+  const handler = {} as typeof import("../../src/app/privacy/page.jsx")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
