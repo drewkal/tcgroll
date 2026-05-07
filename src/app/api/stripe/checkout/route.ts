@@ -1,7 +1,7 @@
 // src/app/api/stripe/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { stripe, CREDIT_PACKAGES } from '@/lib/stripe'
+import { getStripe, CREDIT_PACKAGES } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
     }
 
-    const checkoutSession = await stripe.checkout.sessions.create({
+    const checkoutSession = await getStripe().checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
       line_items: [

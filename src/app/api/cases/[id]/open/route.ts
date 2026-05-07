@@ -5,15 +5,16 @@ import { openCase } from '@/lib/opening-engine'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Please sign in to open cases' }, { status: 401 })
     }
 
-    const result = await openCase(params.id, session.user.id)
+    const result = await openCase(id, session.user.id)
 
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 })

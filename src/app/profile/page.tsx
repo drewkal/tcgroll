@@ -1,6 +1,6 @@
 // src/app/profile/page.tsx
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
@@ -26,10 +26,19 @@ type Transaction = {
   createdAt: string
 }
 
-export default function ProfilePage() {
+function DepositToast() {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const deposit = searchParams.get('deposit')
+    if (deposit === 'success') toast.success('Deposit successful! Your balance has been updated.')
+    if (deposit === 'cancelled') toast.error('Deposit cancelled.')
+  }, [searchParams])
+  return null
+}
+
+function ProfilePageInner() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [stats, setStats] = useState<Stats | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,12 +47,6 @@ export default function ProfilePage() {
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
-
-  useEffect(() => {
-    const deposit = searchParams.get('deposit')
-    if (deposit === 'success') toast.success('Deposit successful! Your balance has been updated.')
-    if (deposit === 'cancelled') toast.error('Deposit cancelled.')
-  }, [searchParams])
 
   useEffect(() => {
     if (!session) return
@@ -223,5 +226,14 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense>
+      <DepositToast />
+      <ProfilePageInner />
+    </Suspense>
   )
 }

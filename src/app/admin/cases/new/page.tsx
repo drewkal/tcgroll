@@ -1,4 +1,5 @@
 // src/app/admin/cases/new/page.tsx
+export const dynamic = 'force-dynamic'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { AdminCaseEditor } from '../[id]/editor'

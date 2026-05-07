@@ -1,4 +1,5 @@
 // src/app/cases/page.tsx
+export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
 import { Package } from 'lucide-react'
@@ -16,10 +17,11 @@ const TIERS = ['ALL', 'STARTER', 'STANDARD', 'PREMIUM', 'ELITE', 'LEGENDARY']
 export default async function CasesPage({
   searchParams,
 }: {
-  searchParams: { tier?: string }
+  searchParams: Promise<{ tier?: string }>
 }) {
+  const { tier } = await searchParams
   const allCases = await getAllCases()
-  const selectedTier = searchParams.tier?.toUpperCase() ?? 'ALL'
+  const selectedTier = tier?.toUpperCase() ?? 'ALL'
 
   const filtered = selectedTier === 'ALL'
     ? allCases

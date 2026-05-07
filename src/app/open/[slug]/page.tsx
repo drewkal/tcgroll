@@ -1,4 +1,5 @@
 // src/app/open/[slug]/page.tsx
+export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { CaseOpeningClient } from './client'
@@ -16,8 +17,9 @@ async function getCase(slug: string) {
   })
 }
 
-export default async function OpenCasePage({ params }: { params: { slug: string } }) {
-  const cardCase = await getCase(params.slug)
+export default async function OpenCasePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const cardCase = await getCase(slug)
   if (!cardCase) notFound()
 
   return <CaseOpeningClient cardCase={cardCase as any} />

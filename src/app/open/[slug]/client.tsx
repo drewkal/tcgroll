@@ -36,7 +36,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [revealedCards, setRevealedCards] = useState<Card[]>([])
   const [flippedCards, setFlippedCards] = useState<boolean[]>([])
-  const [selectedToSell, setSelectedToSell] = useState<Set<string>>([])
+  const [selectedToSell, setSelectedToSell] = useState<Set<string>>(new Set())
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
   const [isSelling, setIsSelling] = useState(false)
   const openingRef = useRef(false)

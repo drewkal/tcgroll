@@ -1,18 +1,20 @@
 // src/app/admin/cases/[id]/page.tsx
+export const dynamic = 'force-dynamic'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { AdminCaseEditor } from './editor'
 
-export default async function AdminCasePage({ params }: { params: { id: string } }) {
+export default async function AdminCasePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session?.user || session.user.role !== 'ADMIN') redirect('/')
 
-  const isNew = params.id === 'new'
+  const isNew = id === 'new'
 
   const [cardCase, allCards] = await Promise.all([
     isNew ? null : prisma.cardCase.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         caseCards: { include: { card: true } },
       },

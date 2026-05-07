@@ -1,10 +1,11 @@
 // src/lib/stripe.ts
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-10-28.acacia',
-  typescript: true,
-})
+export function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-04-22.dahlia',
+  })
+}
 
 export const CREDIT_PACKAGES = [
   { id: 'credits_5', credits: 5, price: 500, label: '$5.00', popular: false },
