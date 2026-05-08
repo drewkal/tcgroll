@@ -44,6 +44,12 @@ interface Props {
 }
 
 const TIERS = ['STARTER', 'STANDARD', 'PREMIUM', 'ELITE', 'LEGENDARY']
+const GAME_OPTIONS = [
+  { value: 'POKEMON', label: 'Pokémon' },
+  { value: 'ONE_PIECE', label: 'One Piece' },
+  { value: 'MAGIC', label: 'Magic: The Gathering' },
+  { value: 'DRAGON_BALL', label: 'Dragon Ball' },
+]
 
 export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
   const router = useRouter()
@@ -54,6 +60,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
     description: cardCase?.description ?? '',
     price: cardCase?.price ?? 4.99,
     tier: cardCase?.tier ?? 'STANDARD',
+    game: (cardCase as any)?.game ?? 'POKEMON',
     featured: cardCase?.featured ?? false,
     active: cardCase?.active ?? true,
     cardCount: cardCase?.cardCount ?? 5,
@@ -192,6 +199,17 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
                 className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-400/50 text-sm"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">GAME</label>
+            <select
+              value={form.game}
+              onChange={set('game')}
+              className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-400/50 text-sm"
+            >
+              {GAME_OPTIONS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+            </select>
           </div>
 
           <div>

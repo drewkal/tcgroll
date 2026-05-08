@@ -72,6 +72,7 @@ model CardCase {
   imageUrl    String?
   price       Float
   tier        CaseTier @default(STANDARD)
+  game        CardGame @default(POKEMON)
   featured    Boolean  @default(false)
   active      Boolean  @default(true)
   cardCount   Int      @default(5)
@@ -88,6 +89,7 @@ model Card {
   imageUrl    String?
   rarity      CardRarity  @default(COMMON)
   value       Float
+  game        CardGame    @default(POKEMON)
   pokemonType PokemonType @default(NORMAL)
   setName     String?
   cardNumber  String?
@@ -199,6 +201,13 @@ enum CaseTier {
   PREMIUM
   ELITE
   LEGENDARY
+}
+
+enum CardGame {
+  POKEMON
+  ONE_PIECE
+  MAGIC
+  DRAGON_BALL
 }
 
 enum TransactionType {

@@ -9,6 +9,12 @@ import { ImageUpload } from '@/components/image-upload'
 
 const RARITIES = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']
 const TYPES = ['NORMAL','FIRE','WATER','GRASS','ELECTRIC','ICE','FIGHTING','POISON','GROUND','FLYING','PSYCHIC','BUG','ROCK','GHOST','DRAGON','DARK','STEEL','FAIRY']
+const GAME_OPTIONS = [
+  { value: 'POKEMON', label: 'Pokémon' },
+  { value: 'ONE_PIECE', label: 'One Piece' },
+  { value: 'MAGIC', label: 'Magic: The Gathering' },
+  { value: 'DRAGON_BALL', label: 'Dragon Ball' },
+]
 
 interface Card {
   id: string
@@ -20,7 +26,7 @@ interface Card {
   setName: string | null
 }
 
-const emptyForm = { name: '', imageUrl: '', rarity: 'COMMON', value: 1, pokemonType: 'NORMAL', setName: '' }
+const emptyForm = { name: '', imageUrl: '', rarity: 'COMMON', value: 1, game: 'POKEMON', pokemonType: 'NORMAL', setName: '' }
 
 type Mode = 'none' | 'create' | 'edit'
 
@@ -48,6 +54,7 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
       imageUrl: card.imageUrl ?? '',
       rarity: card.rarity,
       value: card.value,
+      game: (card as any).game ?? 'POKEMON',
       pokemonType: card.pokemonType,
       setName: card.setName ?? '',
     })
@@ -150,6 +157,12 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">VALUE ($)</label>
               <input type="number" step="0.01" min="0" value={form.value} onChange={set('value')} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">GAME</label>
+              <select value={form.game} onChange={set('game')} className={inputClass}>
+                {GAME_OPTIONS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">RARITY</label>
