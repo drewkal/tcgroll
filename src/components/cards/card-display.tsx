@@ -9,7 +9,7 @@ import { getRarityColor } from '@/lib/opening-engine'
 import { CardDetailModal } from './card-detail-modal'
 
 interface CardDisplayProps {
-  card: Card
+  card: Card & { game?: string }
   size?: 'sm' | 'md' | 'lg'
   selected?: boolean
   onSelect?: () => void
@@ -42,6 +42,7 @@ export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }:
   const [showModal, setShowModal] = useState(false)
   const sizes = sizeMap[size]
   const rarityColor = getRarityColor(card.rarity)
+  const isPokemon = !card.game || card.game === 'POKEMON'
   const typeColor = getPokemonTypeColor(card.pokemonType)
 
   return (
@@ -75,7 +76,7 @@ export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }:
             sizes="(max-width: 768px) 120px, 200px"
           />
         ) : (
-          <PokemonCardPlaceholder name={card.name} type={card.pokemonType} typeColor={typeColor} rarity={card.rarity} />
+          <PokemonCardPlaceholder name={card.name} type={isPokemon ? card.pokemonType : 'NORMAL'} typeColor={isPokemon ? typeColor : '#9ca3af'} rarity={card.rarity} />
         )}
       </div>
 
@@ -97,13 +98,15 @@ export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }:
         </div>
       </div>
 
-      {/* Type pill */}
-      <div
-        className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold"
-        style={{ backgroundColor: `${typeColor}30`, color: typeColor, border: `1px solid ${typeColor}50` }}
-      >
-        {card.pokemonType}
-      </div>
+      {/* Type pill — Pokémon only */}
+      {isPokemon && (
+        <div
+          className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold"
+          style={{ backgroundColor: `${typeColor}30`, color: typeColor, border: `1px solid ${typeColor}50` }}
+        >
+          {card.pokemonType}
+        </div>
+      )}
 
       {/* Selection overlay */}
       {selected && (

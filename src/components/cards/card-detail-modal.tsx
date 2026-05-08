@@ -11,6 +11,7 @@ interface Card {
   imageUrl: string | null
   rarity: string
   value: number
+  game?: string | null
   pokemonType: string
   setName?: string | null
   description?: string | null
@@ -40,6 +41,7 @@ export function CardDetailModal({ card, onClose }: Props) {
   if (!card) return null
 
   const rarityColor = getRarityColor(card.rarity)
+  const isPokemon   = !card.game || card.game === 'POKEMON'
   const typeColor   = getPokemonTypeColor(card.pokemonType)
 
   return (
@@ -75,19 +77,21 @@ export function CardDetailModal({ card, onClose }: Props) {
             <div className="w-full h-full flex items-center justify-center">
               <div
                 className="w-24 h-24 rounded-full flex items-center justify-center text-5xl"
-                style={{ backgroundColor: typeColor + '20', border: `2px solid ${typeColor}50` }}
+                style={{ backgroundColor: rarityColor + '20', border: `2px solid ${rarityColor}50` }}
               >
-                {getPokemonEmoji(card.pokemonType)}
+                {isPokemon ? getPokemonEmoji(card.pokemonType) : '🃏'}
               </div>
             </div>
           )}
-          {/* Type badge */}
-          <div
-            className="absolute top-4 left-4 px-2 py-1 rounded-lg text-xs font-mono font-semibold"
-            style={{ backgroundColor: typeColor + '25', color: typeColor, border: `1px solid ${typeColor}40` }}
-          >
-            {card.pokemonType}
-          </div>
+          {/* Type badge — Pokémon only */}
+          {isPokemon && (
+            <div
+              className="absolute top-4 left-4 px-2 py-1 rounded-lg text-xs font-mono font-semibold"
+              style={{ backgroundColor: typeColor + '25', color: typeColor, border: `1px solid ${typeColor}40` }}
+            >
+              {card.pokemonType}
+            </div>
+          )}
         </div>
 
         {/* Details */}

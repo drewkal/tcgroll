@@ -170,12 +170,14 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
                 {RARITIES.map(r => <option key={r}>{r}</option>)}
               </select>
             </div>
-            <div>
-              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">POKEMON TYPE</label>
-              <select value={form.pokemonType} onChange={set('pokemonType')} className={inputClass}>
-                {TYPES.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
+            {form.game === 'POKEMON' && (
+              <div>
+                <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">POKEMON TYPE</label>
+                <select value={form.pokemonType} onChange={set('pokemonType')} className={inputClass}>
+                  {TYPES.map(t => <option key={t}>{t}</option>)}
+                </select>
+              </div>
+            )}
             <div className="col-span-2 md:col-span-3">
               <ImageUpload
                 value={form.imageUrl}
@@ -227,7 +229,7 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
         <table className="w-full text-sm">
           <thead className="border-b border-white/5">
             <tr>
-              {['Card Name', 'Set', 'Type', 'Rarity', 'Value', 'Actions'].map(h => (
+              {['Card Name', 'Set', 'Game', 'Rarity', 'Value', 'Actions'].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-mono text-slate-500 tracking-wider">{h}</th>
               ))}
             </tr>
@@ -247,7 +249,7 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
                   </div>
                 </td>
                 <td className="px-5 py-3 text-slate-400 text-xs">{card.setName ?? '—'}</td>
-                <td className="px-5 py-3 text-slate-400 text-xs font-mono">{card.pokemonType}</td>
+                <td className="px-5 py-3 text-slate-400 text-xs font-mono">{(card as any).game ?? 'POKEMON'}</td>
                 <td className="px-5 py-3">
                   <span className="rarity-badge" style={{
                     color: getRarityColor(card.rarity),
