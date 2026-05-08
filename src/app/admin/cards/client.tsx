@@ -4,7 +4,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { Plus, Save, X } from 'lucide-react'
+import { Plus, Save, X, Edit, Trash2 } from 'lucide-react'
 import { ImageUpload } from '@/components/image-upload'
 
 const RARITIES = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']
@@ -22,16 +22,40 @@ interface Card {
 
 const emptyForm = { name: '', imageUrl: '', rarity: 'COMMON', value: 1, pokemonType: 'NORMAL', setName: '' }
 
+type Mode = 'none' | 'create' | 'edit'
+
 export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
-  const [cards, setCards] = useState(initialCards)
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ ...emptyForm })
-  const [saving, setSaving] = useState(false)
-  const [search, setSearch] = useState('')
+  const [cards, setCards]           = useState(initialCards)
+  const [mode, setMode]             = useState<Mode>('none')
+  const [editingId, setEditingId]   = useState<string | null>(null)
+  const [form, setForm]             = useState({ ...emptyForm })
+  const [saving, setSaving]         = useState(false)
+  const [search, setSearch]         = useState('')
   const [rarityFilter, setRarityFilter] = useState('ALL')
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [k]: k === 'value' ? parseFloat(e.target.value) : e.target.value }))
+
+  const openCreate = () => {
+    setForm({ ...emptyForm })
+    setEditingId(null)
+    setMode('create')
+  }
+
+  const openEdit = (card: Card) => {
+    setForm({
+      name: card.name,
+      imageUrl: card.imageUrl ?? '',
+      rarity: card.rarity,
+      value: card.value,
+      pokemonType: card.pokemonType,
+      setName: card.setName ?? '',
+    })
+    setEditingId(card.id)
+    setMode('edit')
+  }
+
+  const closeForm = () => { setMode('none'); setEditingId(null) }
 
   const handleCreate = async () => {
     if (!form.name) { toast.error('Name is required'); return }
@@ -45,11 +69,42 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
       const card = await res.json()
       if (!res.ok) { toast.error(card.error); return }
       setCards(prev => [card, ...prev])
-      setForm({ ...emptyForm })
-      setShowForm(false)
+      closeForm()
       toast.success('Card created!')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleUpdate = async () => {
+    if (!form.name || !editingId) return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/cards/${editingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const updated = await res.json()
+      if (!res.ok) { toast.error(updated.error); return }
+      setCards(prev => prev.map(c => c.id === editingId ? updated : c))
+      closeForm()
+      toast.success('Card updated!')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/cards/${id}`, { method: 'DELETE' })
+      if (!res.ok) { toast.error('Failed to delete card'); return }
+      setCards(prev => prev.filter(c => c.id !== id))
+      if (editingId === id) closeForm()
+      toast.success('Card deleted')
+    } catch {
+      toast.error('Failed to delete card')
     }
   }
 
@@ -59,6 +114,8 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
     return matchSearch && matchRarity
   })
 
+  const inputClass = 'w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50'
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-8">
       <div className="flex items-center justify-between">
@@ -67,70 +124,65 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
           <h1 className="font-display text-5xl text-white tracking-wide">CARD MANAGEMENT</h1>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={mode === 'none' ? openCreate : closeForm}
           className="btn-gold px-5 py-2.5 rounded-xl font-display tracking-wider text-sm flex items-center gap-2"
         >
-          {showForm ? <X size={16} /> : <Plus size={16} />}
-          {showForm ? 'Cancel' : 'New Card'}
+          {mode !== 'none' ? <X size={16} /> : <Plus size={16} />}
+          {mode !== 'none' ? 'Cancel' : 'New Card'}
         </button>
       </div>
 
-      {/* New card form */}
-      {showForm && (
+      {/* Create / Edit form */}
+      {mode !== 'none' && (
         <div className="glass rounded-2xl border border-yellow-400/20 p-6">
-          <h2 className="font-display text-xl text-white tracking-wide mb-5">CREATE NEW CARD</h2>
+          <h2 className="font-display text-xl text-white tracking-wide mb-5">
+            {mode === 'create' ? 'CREATE NEW CARD' : `EDIT: ${form.name}`}
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
-            {[
-              { key: 'name', label: 'NAME', type: 'text' },
-              { key: 'setName', label: 'SET NAME', type: 'text' },
-            ].map(({ key, label, type }) => (
-              <div key={key}>
-                <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">{label}</label>
-                <input
-                  type={type}
-                  value={form[key as keyof typeof form] as string}
-                  onChange={set(key as keyof typeof form)}
-                  className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50"
-                />
-              </div>
-            ))}
-            <div className="col-span-2 md:col-span-3">
-              <ImageUpload value={form.imageUrl} onChange={url => setForm(prev => ({ ...prev, imageUrl: url }))} />
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">NAME</label>
+              <input type="text" value={form.name} onChange={set('name')} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">SET NAME</label>
+              <input type="text" value={form.setName} onChange={set('setName')} className={inputClass} />
             </div>
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">VALUE ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.value}
-                onChange={set('value')}
-                className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50"
-              />
+              <input type="number" step="0.01" min="0" value={form.value} onChange={set('value')} className={inputClass} />
             </div>
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">RARITY</label>
-              <select value={form.rarity} onChange={set('rarity')}
-                className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
+              <select value={form.rarity} onChange={set('rarity')} className={inputClass}>
                 {RARITIES.map(r => <option key={r}>{r}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">POKEMON TYPE</label>
-              <select value={form.pokemonType} onChange={set('pokemonType')}
-                className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
+              <select value={form.pokemonType} onChange={set('pokemonType')} className={inputClass}>
                 {TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
+            <div className="col-span-2 md:col-span-3">
+              <ImageUpload
+                value={form.imageUrl}
+                onChange={url => setForm(prev => ({ ...prev, imageUrl: url }))}
+              />
+            </div>
           </div>
-          <button
-            onClick={handleCreate}
-            disabled={saving}
-            className="btn-gold px-6 py-2.5 rounded-xl font-display tracking-wider text-sm flex items-center gap-2"
-          >
-            {saving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Save size={14} />}
-            Create Card
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={mode === 'create' ? handleCreate : handleUpdate}
+              disabled={saving}
+              className="btn-gold px-6 py-2.5 rounded-xl font-display tracking-wider text-sm flex items-center gap-2"
+            >
+              {saving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Save size={14} />}
+              {mode === 'create' ? 'Create Card' : 'Save Changes'}
+            </button>
+            <button onClick={closeForm} className="px-4 py-2.5 rounded-xl border border-white/10 text-slate-400 hover:text-white text-sm transition-colors">
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -162,26 +214,52 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
         <table className="w-full text-sm">
           <thead className="border-b border-white/5">
             <tr>
-              {['Card Name', 'Set', 'Type', 'Rarity', 'Value'].map(h => (
+              {['Card Name', 'Set', 'Type', 'Rarity', 'Value', 'Actions'].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-mono text-slate-500 tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-white/3">
             {filtered.map(card => (
-              <tr key={card.id} className="hover:bg-white/2 transition-colors">
-                <td className="px-5 py-3 text-white font-medium">{card.name}</td>
+              <tr
+                key={card.id}
+                className={`hover:bg-white/2 transition-colors ${editingId === card.id ? 'bg-yellow-400/5' : ''}`}
+              >
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-3">
+                    {card.imageUrl && (
+                      <img src={card.imageUrl} alt={card.name} className="w-8 h-10 object-contain rounded" />
+                    )}
+                    <span className="text-white font-medium">{card.name}</span>
+                  </div>
+                </td>
                 <td className="px-5 py-3 text-slate-400 text-xs">{card.setName ?? '—'}</td>
                 <td className="px-5 py-3 text-slate-400 text-xs font-mono">{card.pokemonType}</td>
                 <td className="px-5 py-3">
                   <span className="rarity-badge" style={{
                     color: getRarityColor(card.rarity),
-                    backgroundColor: `${getRarityColor(card.rarity)}20`
+                    backgroundColor: `${getRarityColor(card.rarity)}20`,
                   }}>
                     {card.rarity}
                   </span>
                 </td>
                 <td className="px-5 py-3 font-mono text-yellow-400">{formatCurrency(card.value)}</td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => openEdit(card)}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-navy-700 text-slate-300 hover:text-white text-xs transition-colors"
+                    >
+                      <Edit size={11} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(card.id, card.name)}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 text-xs transition-colors"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
