@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck } from 'lucide-react'
+import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers } from 'lucide-react'
 
 async function getAdminData() {
   const [totalUsers, totalOpenings, revenueAgg, cases, recentUsers] = await Promise.all([
@@ -82,6 +82,12 @@ export default async function AdminPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-700 border border-white/10 text-slate-300 hover:text-white text-sm font-display tracking-wider transition-colors"
             >
               <Receipt size={14} /> Orders
+            </Link>
+            <Link
+              href="/admin/cards"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-700 border border-white/10 text-slate-300 hover:text-white text-sm font-display tracking-wider transition-colors"
+            >
+              <Layers size={14} /> Cards
             </Link>
             <Link
               href="/admin/cases/new"
