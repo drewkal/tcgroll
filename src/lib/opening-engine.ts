@@ -26,6 +26,7 @@ export function weightedRandom(cards: CardWithDropRate[]): Card {
 export async function openCase(caseId: string, userId: string): Promise<{
   success: boolean
   cards?: Card[]
+  userCardIds?: string[]
   error?: string
   newBalance?: number
 }> {
@@ -67,10 +68,10 @@ export async function openCase(caseId: string, userId: string): Promise<{
       },
     })
 
-    // Add cards to user inventory
-    await tx.userCard.createMany({
-      data: drawnCards.map(card => ({ userId, cardId: card.id })),
-    })
+    // Add cards to user inventory — create individually to capture IDs
+    const userCards = await Promise.all(
+      drawnCards.map(card => tx.userCard.create({ data: { userId, cardId: card.id }, select: { id: true } }))
+    )
 
     // Deduct balance
     const updatedUser = await tx.user.update({
@@ -88,12 +89,13 @@ export async function openCase(caseId: string, userId: string): Promise<{
       },
     })
 
-    return { opening, newBalance: updatedUser.balance }
+    return { opening, newBalance: updatedUser.balance, userCardIds: userCards.map(uc => uc.id) }
   })
 
   return {
     success: true,
     cards: drawnCards,
+    userCardIds: result.userCardIds,
     newBalance: result.newBalance,
   }
 }

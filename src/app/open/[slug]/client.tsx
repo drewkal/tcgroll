@@ -177,9 +177,10 @@ export function CaseOpeningClient({ cardCase }: Props) {
   const [phase,          setPhase]          = useState<Phase>('idle')
   const [winningCards,   setWinningCards]   = useState<Card[]>([])
   const [revealedCards,  setRevealedCards]  = useState<Card[]>([])
+  const [userCardIds,    setUserCardIds]    = useState<string[]>([])
   const [spinIndex,      setSpinIndex]      = useState(0)
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
-  const [selectedToSell, setSelectedToSell] = useState<Set<string>>(new Set())
+  const [selectedToSell, setSelectedToSell] = useState<Set<number>>(new Set())
   const [isSelling,      setIsSelling]      = useState(false)
 
   const balance   = currentBalance ?? session?.user?.balance ?? 0
@@ -194,6 +195,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
     setPhase('fetching')
     setWinningCards([])
     setRevealedCards([])
+    setUserCardIds([])
     setSpinIndex(0)
     setSelectedToSell(new Set())
 
@@ -202,6 +204,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
       const data = await res.json()
       if (!res.ok) { toast.error(data.error ?? 'Failed to open case'); setPhase('idle'); return }
       setWinningCards(data.cards)
+      setUserCardIds(data.userCardIds ?? [])
       setCurrentBalance(data.newBalance)
       updateSession()
       setPhase('spinning')
@@ -223,10 +226,10 @@ export function CaseOpeningClient({ cardCase }: Props) {
     }
   }, [spinIndex, winningCards, updateSession])
 
-  const toggleSell = useCallback((id: string) => {
+  const toggleSell = useCallback((idx: number) => {
     setSelectedToSell(prev => {
       const s = new Set(prev)
-      s.has(id) ? s.delete(id) : s.add(id)
+      s.has(idx) ? s.delete(idx) : s.add(idx)
       return s
     })
   }, [])
@@ -253,8 +256,8 @@ export function CaseOpeningClient({ cardCase }: Props) {
     }
   }
 
-  const handleSellSelected = () => sellCards(Array.from(selectedToSell))
-  const handleSellAll      = () => sellCards(revealedCards.map(c => c.id))
+  const handleSellSelected = () => sellCards(Array.from(selectedToSell).map(i => userCardIds[i]).filter(Boolean))
+  const handleSellAll      = () => sellCards(userCardIds)
 
   const bestCard = revealedCards.reduce<Card | null>((best, card) => {
     if (!best) return card
@@ -333,7 +336,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
 
           {phase === 'done' && (
             <button
-              onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setSpinIndex(0) }}
+              onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setUserCardIds([]); setSpinIndex(0); setSelectedToSell(new Set()) }}
               className="w-full py-3 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all font-mono text-sm flex items-center justify-center gap-2"
             >
               <RotateCcw size={14} /> Open Again
@@ -457,14 +460,14 @@ export function CaseOpeningClient({ cardCase }: Props) {
                 {revealedCards.map((card, i) => (
                   <div
                     key={`${card.id}-${i}`}
-                    onClick={() => toggleSell(card.id)}
+                    onClick={() => toggleSell(i)}
                     className={cn(
                       'cursor-pointer rounded-xl transition-all',
-                      selectedToSell.has(card.id) ? 'ring-2 ring-red-400 opacity-60' : 'hover:scale-105',
+                      selectedToSell.has(i) ? 'ring-2 ring-red-400 opacity-60' : 'hover:scale-105',
                     )}
                   >
                     <CardDisplay card={card} size="sm" />
-                    {selectedToSell.has(card.id) && (
+                    {selectedToSell.has(i) && (
                       <div className="text-center text-xs font-mono text-red-400 mt-1">SELL</div>
                     )}
                   </div>
@@ -520,7 +523,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
                   </Link>
 
                   <button
-                    onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setSpinIndex(0) }}
+                    onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setUserCardIds([]); setSpinIndex(0); setSelectedToSell(new Set()) }}
                     className="btn-gold flex items-center gap-2 px-4 py-3 rounded-xl text-sm"
                   >
                     <RotateCcw size={14} /> Open Again
