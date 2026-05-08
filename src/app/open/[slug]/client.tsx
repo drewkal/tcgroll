@@ -9,7 +9,7 @@ import { Card } from '@prisma/client'
 import { CardDisplay } from '@/components/cards/card-display'
 import { formatCurrency, getRarityLabel, getTierLabel } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { Package, ChevronLeft, Zap, RotateCcw, Info } from 'lucide-react'
+import { Package, ChevronLeft, Zap, RotateCcw, Info, DollarSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type CaseWithCards = {
@@ -203,6 +203,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
       if (!res.ok) { toast.error(data.error ?? 'Failed to open case'); setPhase('idle'); return }
       setWinningCards(data.cards)
       setCurrentBalance(data.newBalance)
+      updateSession()
       setPhase('spinning')
     } catch {
       toast.error('Something went wrong')
@@ -216,7 +217,7 @@ export function CaseOpeningClient({ cardCase }: Props) {
     setRevealedCards(prev => [...prev, winningCards[spinIndex]])
     const next = spinIndex + 1
     if (next >= winningCards.length) {
-      setTimeout(() => { setPhase('done'); updateSession() }, 150)
+      setTimeout(() => setPhase('done'), 150)
     } else {
       setSpinIndex(next)
     }
@@ -230,14 +231,14 @@ export function CaseOpeningClient({ cardCase }: Props) {
     })
   }, [])
 
-  const handleSellSelected = async () => {
-    if (selectedToSell.size === 0) return
+  const sellCards = async (ids: string[]) => {
+    if (ids.length === 0) return
     setIsSelling(true)
     try {
       const res  = await fetch('/api/user/sell', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userCardIds: Array.from(selectedToSell) }),
+        body: JSON.stringify({ userCardIds: ids }),
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error); return }
@@ -251,6 +252,9 @@ export function CaseOpeningClient({ cardCase }: Props) {
       setIsSelling(false)
     }
   }
+
+  const handleSellSelected = () => sellCards(Array.from(selectedToSell))
+  const handleSellAll      = () => sellCards(revealedCards.map(c => c.id))
 
   const bestCard = revealedCards.reduce<Card | null>((best, card) => {
     if (!best) return card
@@ -467,9 +471,9 @@ export function CaseOpeningClient({ cardCase }: Props) {
                 ))}
               </div>
 
-              {/* Summary */}
-              <div className="glass rounded-2xl border border-white/5 p-5">
-                <div className="flex items-center justify-between flex-wrap gap-4">
+              {/* Summary + actions */}
+              <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <div className="text-xs font-mono text-slate-500 tracking-widest">OPENING VALUE</div>
                     <div className="font-display text-3xl text-yellow-400">{formatCurrency(totalValue)}</div>
@@ -481,30 +485,46 @@ export function CaseOpeningClient({ cardCase }: Props) {
                       }
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
-                    {selectedToSell.size > 0 && (
-                      <button
-                        onClick={handleSellSelected}
-                        disabled={isSelling}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 text-sm transition-all disabled:opacity-50"
-                      >
-                        {isSelling ? <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" /> : null}
-                        Sell {selectedToSell.size} card{selectedToSell.size > 1 ? 's' : ''}
-                      </button>
-                    )}
-                    <Link
-                      href="/collection"
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:border-white/20 text-sm transition-all"
-                    >
-                      <Package size={14} /> Collection
-                    </Link>
-                    <button
-                      onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setSpinIndex(0) }}
-                      className="btn-gold flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm"
-                    >
-                      <RotateCcw size={14} /> Open Again
-                    </button>
+                  <div className="text-xs font-mono text-slate-500 text-right">
+                    Click cards to select for selling
                   </div>
+                </div>
+
+                <div className="flex gap-2 flex-wrap">
+                  {/* Sell all */}
+                  <button
+                    onClick={handleSellAll}
+                    disabled={isSelling}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-green-500/25 font-display tracking-wider text-sm transition-all disabled:opacity-50"
+                  >
+                    {isSelling ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <DollarSign size={15} />}
+                    SELL ALL — {formatCurrency(totalValue)}
+                  </button>
+
+                  {/* Sell selected */}
+                  {selectedToSell.size > 0 && (
+                    <button
+                      onClick={handleSellSelected}
+                      disabled={isSelling}
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 text-sm transition-all disabled:opacity-50"
+                    >
+                      Sell {selectedToSell.size} selected
+                    </button>
+                  )}
+
+                  <Link
+                    href="/collection"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:border-white/20 text-sm transition-all"
+                  >
+                    <Package size={14} /> Collection
+                  </Link>
+
+                  <button
+                    onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setSpinIndex(0) }}
+                    className="btn-gold flex items-center gap-2 px-4 py-3 rounded-xl text-sm"
+                  >
+                    <RotateCcw size={14} /> Open Again
+                  </button>
                 </div>
               </div>
             </>
