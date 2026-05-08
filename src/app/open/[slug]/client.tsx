@@ -320,27 +320,12 @@ export function CaseOpeningClient({ cardCase }: Props) {
             </div>
           </div>
 
-          <button
-            onClick={handleOpen}
-            disabled={phase !== 'idle' || !canAfford}
-            className={cn(
-              'w-full py-5 rounded-2xl font-display text-2xl tracking-widest transition-all duration-300',
-              'flex items-center justify-center gap-3',
-              phase === 'idle' && canAfford
-                ? 'btn-gold shadow-gold-glow hover:shadow-gold-glow animate-glow-pulse'
-                : 'bg-navy-700 text-slate-500 cursor-not-allowed border border-white/5',
-            )}
-          >
-            {phase === 'fetching' ? (
-              <><div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> ROLLING...</>
-            ) : phase === 'spinning' ? (
-              <><div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" /> SPINNING...</>
-            ) : !canAfford ? (
-              <Link href="/profile" className="text-sm text-slate-400">Add Funds in Profile</Link>
-            ) : (
-              <><Zap size={24} className="fill-black" /> OPEN — {formatCurrency(cardCase.price)}</>
-            )}
-          </button>
+          {(phase === 'fetching' || phase === 'spinning') && (
+            <div className="w-full py-4 rounded-2xl bg-navy-700 border border-white/5 flex items-center justify-center gap-3 text-slate-400 font-display tracking-widest text-lg">
+              <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+              {phase === 'fetching' ? 'ROLLING...' : 'SPINNING...'}
+            </div>
+          )}
 
           {phase === 'done' && (
             <button
@@ -355,12 +340,39 @@ export function CaseOpeningClient({ cardCase }: Props) {
         {/* ── Right panel ────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Idle */}
+          {/* Idle — show all cards in the case */}
           {phase === 'idle' && (
-            <div className="min-h-80 flex flex-col items-center justify-center glass rounded-2xl border border-white/5 border-dashed p-12">
-              <Package size={64} className="text-slate-600 mb-4 animate-float" />
-              <p className="font-display text-3xl text-slate-500 tracking-wide mb-2">READY TO ROLL</p>
-              <p className="text-slate-600 text-sm">Click "Open" to spin the reel</p>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-mono text-slate-500 tracking-widest mb-3">
+                  {cardCase.caseCards.length} POSSIBLE CARDS
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[480px] overflow-y-auto pr-1">
+                  {cardCase.caseCards.map(({ card, dropRate }) => (
+                    <div key={card.id}>
+                      <CardDisplay card={card} size="sm" />
+                      <div className="text-center text-xs font-mono text-slate-500 mt-1">{dropRate.toFixed(1)}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleOpen}
+                disabled={!canAfford}
+                className={cn(
+                  'w-full py-5 rounded-2xl font-display text-2xl tracking-widest transition-all duration-300',
+                  'flex items-center justify-center gap-3',
+                  canAfford
+                    ? 'btn-gold shadow-gold-glow hover:shadow-gold-glow animate-glow-pulse'
+                    : 'bg-navy-700 text-slate-500 cursor-not-allowed border border-white/5',
+                )}
+              >
+                {canAfford
+                  ? <><Zap size={24} className="fill-black" /> OPEN — {formatCurrency(cardCase.price)}</>
+                  : <Link href="/profile" className="text-sm text-slate-400">Add Funds in Profile</Link>
+                }
+              </button>
             </div>
           )}
 
