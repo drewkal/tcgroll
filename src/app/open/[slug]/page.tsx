@@ -17,10 +17,29 @@ async function getCase(slug: string) {
   })
 }
 
+async function getRecentPulls(caseId: string) {
+  return prisma.openingCard.findMany({
+    where: { opening: { caseId } },
+    include: {
+      card: { select: { name: true, rarity: true, value: true, imageUrl: true } },
+      opening: {
+        select: {
+          createdAt: true,
+          user: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { opening: { createdAt: 'desc' } },
+    take: 20,
+  })
+}
+
 export default async function OpenCasePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const cardCase = await getCase(slug)
   if (!cardCase) notFound()
 
-  return <CaseOpeningClient cardCase={cardCase as any} />
+  const recentPulls = await getRecentPulls(cardCase.id)
+
+  return <CaseOpeningClient cardCase={cardCase as any} recentPulls={recentPulls as any} />
 }

@@ -24,7 +24,16 @@ type CaseWithCards = {
   _count: { openings: number }
 }
 
-interface Props { cardCase: CaseWithCards }
+type RecentPull = {
+  id: string
+  card: { name: string; rarity: string; value: number; imageUrl: string | null }
+  opening: { createdAt: string; user: { name: string | null } }
+}
+
+interface Props {
+  cardCase: CaseWithCards
+  recentPulls: RecentPull[]
+}
 
 type Phase = 'idle' | 'fetching' | 'spinning' | 'done'
 
@@ -169,7 +178,7 @@ function SpinReel({
 }
 
 // ─── Main component ────────────────────────────────────────────────
-export function CaseOpeningClient({ cardCase }: Props) {
+export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const { data: session, update: updateSession } = useSession()
   const router = useRouter()
   const openingRef = useRef(false)
@@ -326,6 +335,35 @@ export function CaseOpeningClient({ cardCase }: Props) {
               })}
             </div>
           </div>
+
+          {/* Recent pulls feed */}
+          {recentPulls.length > 0 && (
+            <div className="glass rounded-2xl border border-white/5 p-4">
+              <div className="flex items-center gap-2 mb-3 text-xs font-mono text-slate-400 tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                RECENT PULLS
+              </div>
+              <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                {recentPulls.map(pull => {
+                  const color = getRarityColor(pull.card.rarity)
+                  const name  = pull.opening.user.name
+                  const label = name ? name.split(' ')[0] + (name.split(' ')[1] ? ' ' + name.split(' ')[1][0] + '.' : '') : 'Someone'
+                  const ago   = timeAgo(pull.opening.createdAt)
+                  return (
+                    <div key={pull.id} className="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-white/3 transition-colors">
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                      <span className="text-slate-400 text-xs truncate flex-1 min-w-0">
+                        <span className="text-white">{label}</span>
+                        {' pulled '}
+                        <span style={{ color }} className="font-medium">{pull.card.name}</span>
+                      </span>
+                      <span className="text-xs font-mono text-slate-600 flex-shrink-0">{ago}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {(phase === 'fetching' || phase === 'spinning') && (
             <div className="w-full py-4 rounded-2xl bg-navy-700 border border-white/5 flex items-center justify-center gap-3 text-slate-400 font-display tracking-widest text-lg">
@@ -536,6 +574,17 @@ export function CaseOpeningClient({ cardCase }: Props) {
       </div>
     </div>
   )
+}
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const m = Math.floor(diff / 60000)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (m < 1)  return 'just now'
+  if (m < 60) return `${m}m ago`
+  if (h < 24) return `${h}h ago`
+  return `${d}d ago`
 }
 
 function playRevealSound(rarity: string) {
