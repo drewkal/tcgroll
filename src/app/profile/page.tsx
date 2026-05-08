@@ -6,8 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { CREDIT_PACKAGES } from '@/lib/stripe'
-import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap } from 'lucide-react'
+import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getRarityColor } from '@/lib/opening-engine'
+import Link from 'next/link'
 
 type Stats = {
   totalCards: number
@@ -26,6 +28,25 @@ type Transaction = {
   createdAt: string
 }
 
+type OpeningCard = {
+  card: {
+    id: string
+    name: string
+    rarity: string
+    value: number
+    imageUrl: string | null
+    pokemonType: string
+  }
+}
+
+type Opening = {
+  id: string
+  totalCost: number
+  createdAt: string
+  case: { name: string; slug: string; price: number }
+  openingCards: OpeningCard[]
+}
+
 function DepositToast() {
   const searchParams = useSearchParams()
   useEffect(() => {
@@ -41,8 +62,10 @@ function ProfilePageInner() {
   const router = useRouter()
   const [stats, setStats] = useState<Stats | null>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [openings, setOpenings] = useState<Opening[]>([])
   const [loading, setLoading] = useState(true)
   const [depositLoading, setDepositLoading] = useState<string | null>(null)
+  const [expandedOpening, setExpandedOpening] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -55,6 +78,7 @@ function ProfilePageInner() {
       .then(data => {
         setStats(data.stats)
         setTransactions(data.transactions)
+        setOpenings(data.recentOpenings ?? [])
       })
       .catch(() => toast.error('Failed to load stats'))
       .finally(() => setLoading(false))
@@ -150,6 +174,102 @@ function ProfilePageInner() {
           </div>
         </div>
       )}
+
+      {/* Opening history */}
+      <div className="glass rounded-2xl border border-white/5 p-6">
+        <h2 className="font-display text-2xl text-white tracking-wide mb-5 flex items-center gap-2">
+          <Package size={20} className="text-yellow-400" />
+          OPENING HISTORY
+        </h2>
+
+        {openings.length === 0 ? (
+          <div className="text-center py-10 text-slate-500">
+            <Package size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="mb-2">No openings yet</p>
+            <Link href="/cases" className="text-yellow-400 text-sm hover:underline">Browse cases to get started</Link>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {openings.map(opening => {
+              const totalValue = opening.openingCards.reduce((s, oc) => s + oc.card.value, 0)
+              const profit = totalValue - opening.totalCost
+              const isExpanded = expandedOpening === opening.id
+              const bestRarity = ['LEGENDARY','EPIC','RARE','UNCOMMON','COMMON'].find(r =>
+                opening.openingCards.some(oc => oc.card.rarity === r)
+              ) ?? 'COMMON'
+
+              return (
+                <div key={opening.id} className="rounded-xl border border-white/5 overflow-hidden">
+                  {/* Row */}
+                  <button
+                    onClick={() => setExpandedOpening(isExpanded ? null : opening.id)}
+                    className="w-full text-left px-5 py-4 hover:bg-white/2 transition-colors flex items-center gap-4"
+                  >
+                    {/* Rarity dot */}
+                    <div
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: getRarityColor(bestRarity), boxShadow: `0 0 6px ${getRarityColor(bestRarity)}` }}
+                    />
+
+                    {/* Case name + date */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium truncate">{opening.case.name}</div>
+                      <div className="text-xs font-mono text-slate-500">{formatDate(opening.createdAt)}</div>
+                    </div>
+
+                    {/* Card count */}
+                    <div className="text-center hidden sm:block">
+                      <div className="text-white font-mono text-sm">{opening.openingCards.length}</div>
+                      <div className="text-slate-500 text-xs">cards</div>
+                    </div>
+
+                    {/* Value vs cost */}
+                    <div className="text-right">
+                      <div className="font-mono text-sm text-yellow-400">{formatCurrency(totalValue)}</div>
+                      <div className={cn('text-xs font-mono', profit >= 0 ? 'text-green-400' : 'text-red-400')}>
+                        {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                      </div>
+                    </div>
+
+                    {isExpanded ? <ChevronUp size={14} className="text-slate-400 flex-shrink-0" /> : <ChevronDown size={14} className="text-slate-400 flex-shrink-0" />}
+                  </button>
+
+                  {/* Expanded cards */}
+                  {isExpanded && (
+                    <div className="border-t border-white/5 px-5 py-4 space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {opening.openingCards.map((oc, i) => {
+                          const color = getRarityColor(oc.card.rarity)
+                          return (
+                            <div
+                              key={i}
+                              className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm"
+                              style={{ borderColor: color + '40', background: color + '10' }}
+                            >
+                              {oc.card.imageUrl && (
+                                <img src={oc.card.imageUrl} alt={oc.card.name} className="w-5 h-5 object-contain rounded" />
+                              )}
+                              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                              <span className="text-white text-xs font-medium">{oc.card.name}</span>
+                              <span className="font-mono text-xs" style={{ color }}>{formatCurrency(oc.card.value)}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                      <div className="flex items-center justify-between text-xs font-mono text-slate-500 pt-1 border-t border-white/5">
+                        <span>Paid {formatCurrency(opening.totalCost)} · Pulled {formatCurrency(totalValue)}</span>
+                        <Link href={`/open/${opening.case.slug}`} className="flex items-center gap-1 text-yellow-400 hover:underline">
+                          Open again <ExternalLink size={11} />
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Deposit section */}
       <div className="glass rounded-2xl border border-yellow-400/10 p-6">

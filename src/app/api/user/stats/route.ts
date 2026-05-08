@@ -26,11 +26,11 @@ export async function GET(req: NextRequest) {
         prisma.caseOpening.findMany({
           where: { userId },
           include: {
-            case: { select: { name: true, price: true } },
-            openingCards: { include: { card: true }, take: 5 },
+            case: { select: { name: true, slug: true, price: true } },
+            openingCards: { include: { card: true } },
           },
           orderBy: { createdAt: 'desc' },
-          take: 5,
+          take: 20,
         }),
       ])
 
