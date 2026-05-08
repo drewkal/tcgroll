@@ -1,6 +1,7 @@
 // src/components/cards/card-detail-modal.tsx
 'use client'
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { formatCurrency, getRarityLabel, getPokemonTypeColor } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
@@ -44,7 +45,7 @@ export function CardDetailModal({ card, onClose }: Props) {
   const isPokemon   = !card.game || card.game === 'POKEMON'
   const typeColor   = getPokemonTypeColor(card.pokemonType)
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
@@ -120,7 +121,8 @@ export function CardDetailModal({ card, onClose }: Props) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
