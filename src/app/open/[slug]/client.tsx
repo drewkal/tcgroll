@@ -1,6 +1,6 @@
 // src/app/open/[slug]/client.tsx
 'use client'
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
+import { useState, useCallback, useRef, useMemo, useEffect, useLayoutEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -96,6 +96,98 @@ function ReelCard({ card, highlight }: { card: Card; highlight: boolean }) {
   )
 }
 
+// ─── Spin tick sounds ─────────────────────────────────────────────
+function scheduleSpinTicks(): (() => void) {
+  if (typeof window === 'undefined') return () => {}
+  const ids: ReturnType<typeof setTimeout>[] = []
+  let t = 0
+  let interval = 55
+  while (t < 4750) {
+    const delay = t
+    const vol = interval < 80 ? 0.07 : interval < 200 ? 0.05 : 0.03
+    ids.push(setTimeout(() => {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const osc = ctx.createOscillator()
+        const g   = ctx.createGain()
+        osc.connect(g); g.connect(ctx.destination)
+        osc.type = 'square'
+        osc.frequency.value = 900 + Math.random() * 100
+        g.gain.setValueAtTime(vol, ctx.currentTime)
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.025)
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.025)
+      } catch {}
+    }, delay))
+    interval = Math.min(500, interval * 1.085)
+    t += interval
+  }
+  return () => ids.forEach(clearTimeout)
+}
+
+// ─── Confetti celebration ─────────────────────────────────────────
+function Celebration({ rarity }: { rarity: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const color = rarity === 'LEGENDARY' ? '#f59e0b' : '#a855f7'
+  const secondary = rarity === 'LEGENDARY' ? '#fff7ed' : '#ede9fe'
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    canvas.width  = window.innerWidth
+    canvas.height = window.innerHeight
+    const ctx = canvas.getContext('2d')!
+
+    type Particle = {
+      x: number; y: number; vx: number; vy: number
+      size: number; rot: number; rotV: number; color: string; shape: 'rect' | 'circle'
+    }
+
+    const palette = [color, secondary, '#ffffff', color, color]
+    const particles: Particle[] = Array.from({ length: rarity === 'LEGENDARY' ? 140 : 90 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 100,
+      vx: (Math.random() - 0.5) * 5,
+      vy: Math.random() * 4 + 2,
+      size: Math.random() * 7 + 3,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 12,
+      color: palette[Math.floor(Math.random() * palette.length)],
+      shape: Math.random() > 0.4 ? 'rect' : 'circle',
+    }))
+
+    const start = Date.now()
+    const DURATION = 3200
+
+    let raf: number
+    const draw = () => {
+      const elapsed = Date.now() - start
+      const fade = Math.max(0, 1 - elapsed / DURATION)
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      for (const p of particles) {
+        p.x  += p.vx
+        p.y  += p.vy
+        p.vy += 0.08
+        p.rot += p.rotV
+        ctx.save()
+        ctx.globalAlpha = fade * 0.9
+        ctx.translate(p.x, p.y)
+        ctx.rotate((p.rot * Math.PI) / 180)
+        ctx.fillStyle = p.color
+        if (p.shape === 'rect') ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.5)
+        else { ctx.beginPath(); ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2); ctx.fill() }
+        ctx.restore()
+      }
+
+      if (elapsed < DURATION) raf = requestAnimationFrame(draw)
+    }
+    raf = requestAnimationFrame(draw)
+    return () => cancelAnimationFrame(raf)
+  }, [color, secondary, rarity])
+
+  return <canvas ref={canvasRef} className="fixed inset-0 z-40 pointer-events-none" />
+}
+
 // ─── The spinning reel for one card ───────────────────────────────
 function SpinReel({
   caseCards,
@@ -109,29 +201,48 @@ function SpinReel({
   const strip        = useMemo(() => buildStrip(caseCards, winner), [])
   const containerRef = useRef<HTMLDivElement>(null)
   const doneRef      = useRef(false)
+  const cancelTicks  = useRef<(() => void) | null>(null)
   const [tx, setTx]           = useState(0)
   const [started, setStarted] = useState(false)
   const [landed, setLanded]   = useState(false)
+  const [flash, setFlash]     = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => {
       const w = containerRef.current?.offsetWidth ?? 700
-      // put WIN_IDX card in center of container
       setTx(-(WIN_IDX * CARD_SLOT - w / 2 + CARD_W / 2))
       setStarted(true)
+      cancelTicks.current = scheduleSpinTicks()
     }, 60)
-    return () => clearTimeout(t)
+    return () => { clearTimeout(t); cancelTicks.current?.() }
   }, [])
+
+  const isBig = winner.rarity === 'LEGENDARY' || winner.rarity === 'EPIC'
 
   const onEnd = useCallback(() => {
     if (doneRef.current) return
     doneRef.current = true
+    cancelTicks.current?.()
     setLanded(true)
+    if (isBig) setFlash(true)
     playRevealSound(winner.rarity)
-    setTimeout(onComplete, 1100)
-  }, [winner.rarity, onComplete])
+    setTimeout(onComplete, isBig ? 1800 : 1100)
+  }, [winner.rarity, onComplete, isBig])
+
+  const rarityColor = getRarityColor(winner.rarity)
 
   return (
+    <>
+    {/* Screen flash */}
+    {flash && (
+      <div
+        className="fixed inset-0 z-30 pointer-events-none animate-ping-once"
+        style={{ backgroundColor: rarityColor + '30' }}
+      />
+    )}
+    {/* Confetti */}
+    {flash && <Celebration rarity={winner.rarity} />}
+
     <div className="relative select-none" style={{ paddingTop: 14, paddingBottom: 14 }}>
       {/* Arrow markers */}
       <div className="absolute top-0 left-1/2 z-20 pointer-events-none"
@@ -174,6 +285,7 @@ function SpinReel({
         </div>
       </div>
     </div>
+    </>
   )
 }
 
