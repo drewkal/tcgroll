@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Package, LayoutGrid, BookOpen, User, LogOut, Shield, Menu, X, Zap } from 'lucide-react'
+import { Package, LayoutGrid, BookOpen, User, LogOut, Shield, Menu, X } from 'lucide-react'
 
 export function Navbar() {
   const { data: session } = useSession()
@@ -21,11 +21,30 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-gold-glow-sm group-hover:shadow-gold-glow transition-shadow">
-              <Zap size={16} className="text-black fill-black" />
-            </div>
-            <span className="font-display text-2xl tracking-wider text-glow-gold text-yellow-400">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-300 group-hover:scale-110">
+              <rect width="34" height="34" rx="8" fill="#0f1629"/>
+              <rect width="34" height="34" rx="8" fill="url(#diceGrad)" fillOpacity="0.15"/>
+              <rect x="0.5" y="0.5" width="33" height="33" rx="7.5" stroke="url(#diceGrad)" strokeOpacity="0.4"/>
+              {/* top-left: common gray */}
+              <circle cx="10" cy="10" r="3" fill="#9ca3af"/>
+              {/* top-right: uncommon green */}
+              <circle cx="24" cy="10" r="3" fill="#22c55e"/>
+              {/* center: rare blue */}
+              <circle cx="17" cy="17" r="3" fill="#3b82f6"/>
+              {/* bottom-left: epic purple */}
+              <circle cx="10" cy="24" r="3" fill="#a855f7"/>
+              {/* bottom-right: legendary gold */}
+              <circle cx="24" cy="24" r="3" fill="#f59e0b"/>
+              <defs>
+                <linearGradient id="diceGrad" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#f59e0b"/>
+                  <stop offset="50%" stopColor="#a855f7"/>
+                  <stop offset="100%" stopColor="#3b82f6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span className="font-logo text-[1.4rem] leading-none tracking-wide text-yellow-400">
               TCG<span className="text-white">ROLL</span>
             </span>
           </Link>

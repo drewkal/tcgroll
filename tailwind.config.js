@@ -29,6 +29,7 @@ module.exports = {
       },
       fontFamily: {
         display: ['var(--font-display)', 'serif'],
+        logo: ['var(--font-logo)', 'sans-serif'],
         body: ['var(--font-body)', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },

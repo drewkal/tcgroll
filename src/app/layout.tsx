@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </body>
       <footer className="border-t border-white/5 py-8 mt-20">
   <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
-    <span className="font-display text-xl text-yellow-400 tracking-wider">TCGROLL</span>
+    <span className="font-logo text-xl text-yellow-400">TCG<span className="text-white">ROLL</span></span>
     <div className="flex gap-6 text-sm text-slate-500">
       <a href="/about"   className="hover:text-yellow-400 transition-colors">About</a>
       <a href="/terms"   className="hover:text-yellow-400 transition-colors">Terms</a>
