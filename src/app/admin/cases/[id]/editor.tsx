@@ -88,7 +88,10 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form }),
+        body: JSON.stringify({
+          ...form,
+          caseCards: caseCards.map(cc => ({ cardId: cc.cardId, dropRate: cc.dropRate })),
+        }),
       })
       if (!res.ok) { toast.error('Failed to save case'); return }
       toast.success(isNew ? 'Case created!' : 'Case updated!')

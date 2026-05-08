@@ -1,9 +1,12 @@
 // src/components/cards/card-display.tsx
 'use client'
 import Image from 'next/image'
+import { useState } from 'react'
+import { Expand } from 'lucide-react'
 import { Card } from '@prisma/client'
 import { cn, formatCurrency, getRarityLabel, getPokemonTypeColor } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
+import { CardDetailModal } from './card-detail-modal'
 
 interface CardDisplayProps {
   card: Card
@@ -36,11 +39,13 @@ const rarityGlowClass: Record<string, string> = {
 }
 
 export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }: CardDisplayProps) {
+  const [showModal, setShowModal] = useState(false)
   const sizes = sizeMap[size]
   const rarityColor = getRarityColor(card.rarity)
   const typeColor = getPokemonTypeColor(card.pokemonType)
 
   return (
+    <>
     <div
       className={cn(
         'relative flex flex-col rounded-xl border-2 bg-gradient-to-b overflow-hidden cursor-pointer transition-all duration-300 group',
@@ -110,7 +115,18 @@ export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }:
           </div>
         </div>
       )}
+
+      {/* Expand button */}
+      <button
+        onClick={e => { e.stopPropagation(); setShowModal(true) }}
+        className="absolute bottom-10 right-1.5 z-20 w-6 h-6 rounded-md bg-black/60 flex items-center justify-center text-slate-300 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <Expand size={11} />
+      </button>
     </div>
+
+    <CardDetailModal card={showModal ? card : null} onClose={() => setShowModal(false)} />
+    </>
   )
 }
 

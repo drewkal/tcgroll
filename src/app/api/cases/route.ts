@@ -39,8 +39,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await req.json()
-    const cardCase = await prisma.cardCase.create({ data: body })
+    const { caseCards, ...caseData } = await req.json()
+    const cardCase = await prisma.cardCase.create({
+      data: {
+        ...caseData,
+        ...(Array.isArray(caseCards) && caseCards.length > 0 && {
+          caseCards: {
+            create: caseCards.map((cc: { cardId: string; dropRate: number }) => ({
+              cardId: cc.cardId, dropRate: cc.dropRate,
+            })),
+          },
+        }),
+      },
+    })
     return NextResponse.json(cardCase, { status: 201 })
   } catch (error) {
     console.error('Case create error:', error)
