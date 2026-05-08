@@ -26,6 +26,7 @@ model User {
   userCards     UserCard[]
   transactions  Transaction[]
   openings      CaseOpening[]
+  withdrawals   WithdrawRequest[]
 }
 
 model Account {
@@ -118,9 +119,11 @@ model UserCard {
   obtainedAt DateTime @default(now())
   soldAt     DateTime?
   sold       Boolean  @default(false)
+  withdrawn  Boolean  @default(false)
 
-  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card       Card @relation(fields: [cardId], references: [id])
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card          Card           @relation(fields: [cardId], references: [id])
+  withdrawCards WithdrawCard[]
 }
 
 model CaseOpening {
@@ -203,4 +206,43 @@ enum TransactionType {
   PURCHASE
   SALE
   REFUND
+}
+
+model WithdrawRequest {
+  id             String         @id @default(cuid())
+  userId         String
+  status         WithdrawStatus @default(PENDING)
+  fullName       String
+  email          String
+  address        String
+  city           String
+  state          String
+  zipCode        String
+  country        String
+  phone          String?
+  notes          String?
+  trackingNumber String?
+  adminNotes     String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards          WithdrawCard[]
+}
+
+model WithdrawCard {
+  id         String          @id @default(cuid())
+  withdrawId String
+  userCardId String
+
+  withdraw   WithdrawRequest @relation(fields: [withdrawId], references: [id], onDelete: Cascade)
+  userCard   UserCard        @relation(fields: [userCardId], references: [id])
+}
+
+enum WithdrawStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
 }

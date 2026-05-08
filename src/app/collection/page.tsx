@@ -7,7 +7,8 @@ import toast from 'react-hot-toast'
 import { CardDisplay } from '@/components/cards/card-display'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { LayoutGrid, DollarSign, Filter } from 'lucide-react'
+import { LayoutGrid, DollarSign, Filter, Truck } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 type UserCard = {
@@ -195,6 +196,12 @@ export default function CollectionPage() {
                   <DollarSign size={12} />
                   {isSelling ? 'Selling...' : `Sell for ${formatCurrency(selectedValue)}`}
                 </button>
+                <Link
+                  href={`/withdraw?cards=${Array.from(selectedCards).join(',')}`}
+                  className="px-4 py-1.5 rounded-lg text-xs flex items-center gap-1.5 bg-navy-700 border border-white/10 text-slate-300 hover:text-white hover:border-white/20 transition-all"
+                >
+                  <Truck size={12} /> Withdraw
+                </Link>
               </>
             )}
           </div>
