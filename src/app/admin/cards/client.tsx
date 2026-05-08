@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import { Plus, Save, X } from 'lucide-react'
+import { ImageUpload } from '@/components/image-upload'
 
 const RARITIES = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']
 const TYPES = ['NORMAL','FIRE','WATER','GRASS','ELECTRIC','ICE','FIGHTING','POISON','GROUND','FLYING','PSYCHIC','BUG','ROCK','GHOST','DRAGON','DARK','STEEL','FAIRY']
@@ -81,7 +82,6 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-5">
             {[
               { key: 'name', label: 'NAME', type: 'text' },
-              { key: 'imageUrl', label: 'IMAGE URL', type: 'text' },
               { key: 'setName', label: 'SET NAME', type: 'text' },
             ].map(({ key, label, type }) => (
               <div key={key}>
@@ -94,6 +94,9 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
                 />
               </div>
             ))}
+            <div className="col-span-2 md:col-span-3">
+              <ImageUpload value={form.imageUrl} onChange={url => setForm(prev => ({ ...prev, imageUrl: url }))} />
+            </div>
             <div>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">VALUE ($)</label>
               <input

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 import { Save, Trash2, ChevronLeft, Plus, X } from 'lucide-react'
 import Link from 'next/link'
+import { ImageUpload } from '@/components/image-upload'
 
 interface Card {
   id: string
@@ -144,7 +145,6 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
           {[
             { key: 'name', label: 'NAME', type: 'text', placeholder: 'Legendary Vault' },
             { key: 'slug', label: 'SLUG', type: 'text', placeholder: 'legendary-vault' },
-            { key: 'imageUrl', label: 'IMAGE URL', type: 'text', placeholder: '/cases/legendary.png' },
           ].map(({ key, label, type, placeholder }) => (
             <div key={key}>
               <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">{label}</label>
@@ -157,6 +157,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
               />
             </div>
           ))}
+          <ImageUpload value={form.imageUrl} onChange={url => setForm(prev => ({ ...prev, imageUrl: url }))} />
 
           <div>
             <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">DESCRIPTION</label>
