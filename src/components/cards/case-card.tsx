@@ -2,6 +2,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState } from 'react'
 import { formatCurrency, getTierLabel } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
@@ -48,10 +49,14 @@ const GAME_EMOJI: Record<string, string> = {
 
 export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
   const styles = tierStyles[cardCase.tier] ?? tierStyles.STANDARD
+  const [hovered, setHovered] = useState(false)
 
   return (
-    // group/preview — named group so inner card's `group` doesn't conflict
-    <div className="relative group/preview">
+    <div
+      className="relative"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
 
       {/* Hover popover — top 4 cards by value */}
       {topCards.length > 0 && (
@@ -60,8 +65,7 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
             'absolute bottom-full left-0 right-0 mb-2 z-50',
             'glass rounded-2xl border border-white/10 p-3',
             'transition-all duration-200 origin-bottom',
-            'opacity-0 translate-y-2 scale-95',
-            'group-hover/preview:opacity-100 group-hover/preview:translate-y-0 group-hover/preview:scale-100',
+            hovered ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95 pointer-events-none',
           )}
         >
           <p className="text-[10px] font-mono text-slate-500 tracking-widest mb-2.5 flex items-center gap-1">
