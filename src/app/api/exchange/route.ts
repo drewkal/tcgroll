@@ -8,27 +8,21 @@ export async function GET() {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const [exchanges, inventory] = await Promise.all([
-      prisma.exchange.findMany({
-        where: { status: 'OPEN' },
-        include: {
-          offeringUser: { select: { id: true, name: true, image: true } },
-          offeredCard: { include: { card: true } },
-          wantedCard: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
+    const [inventory, catalog] = await Promise.all([
       prisma.userCard.findMany({
-        where: { userId: session.user.id, sold: false, withdrawn: false, exchangeOffered: null },
+        where: { userId: session.user.id, sold: false, withdrawn: false },
         include: { card: true },
         orderBy: { obtainedAt: 'desc' },
       }),
+      prisma.card.findMany({
+        orderBy: [{ value: 'desc' }],
+      }),
     ])
 
-    return NextResponse.json({ exchanges, inventory })
+    return NextResponse.json({ inventory, catalog })
   } catch (e) {
     console.error(e)
-    return NextResponse.json({ error: 'Failed to fetch exchanges' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
   }
 }
 
@@ -37,38 +31,60 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { offeredCardId, wantedCardId } = await req.json()
-    if (!offeredCardId || !wantedCardId) {
+    const { userCardId, wantedCardId } = await req.json()
+    if (!userCardId || !wantedCardId) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    // Verify the user owns the offered card and it's not locked
-    const userCard = await prisma.userCard.findFirst({
-      where: { id: offeredCardId, userId: session.user.id, sold: false, withdrawn: false },
-      include: { exchangeOffered: true },
+    const [userCard, wantedCard, user] = await Promise.all([
+      prisma.userCard.findFirst({
+        where: { id: userCardId, userId: session.user.id, sold: false, withdrawn: false },
+        include: { card: true },
+      }),
+      prisma.card.findUnique({ where: { id: wantedCardId } }),
+      prisma.user.findUnique({ where: { id: session.user.id }, select: { balance: true } }),
+    ])
+
+    if (!userCard) return NextResponse.json({ error: 'Card not in your collection' }, { status: 400 })
+    if (!wantedCard) return NextResponse.json({ error: 'Requested card not found' }, { status: 400 })
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 })
+
+    if (userCard.cardId === wantedCardId) {
+      return NextResponse.json({ error: 'You already have this card' }, { status: 400 })
+    }
+
+    // diff > 0: user wants a more expensive card — they pay the diff
+    // diff < 0: user wants a cheaper card — they receive the diff
+    const diff = wantedCard.value - userCard.card.value
+
+    if (diff > 0 && user.balance < diff) {
+      return NextResponse.json({ error: `Insufficient balance. You need ${(diff - user.balance).toFixed(2)} more.` }, { status: 400 })
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Mark the traded card as sold
+      await tx.userCard.update({ where: { id: userCardId }, data: { sold: true, soldAt: new Date() } })
+
+      // Give the user the wanted card
+      await tx.userCard.create({ data: { userId: session.user.id, cardId: wantedCardId } })
+
+      // Settle balance difference
+      if (diff !== 0) {
+        await tx.user.update({ where: { id: session.user.id }, data: { balance: { increment: -diff } } })
+        await tx.transaction.create({
+          data: {
+            userId: session.user.id,
+            amount: -diff,
+            type: 'EXCHANGE',
+            description: `Exchanged ${userCard.card.name} for ${wantedCard.name}`,
+          },
+        })
+      }
     })
-    if (!userCard) return NextResponse.json({ error: 'Card not available' }, { status: 400 })
-    if (userCard.exchangeOffered) return NextResponse.json({ error: 'Card already in an exchange' }, { status: 400 })
 
-    const wantedCard = await prisma.card.findUnique({ where: { id: wantedCardId } })
-    if (!wantedCard) return NextResponse.json({ error: 'Wanted card not found' }, { status: 400 })
-
-    const exchange = await prisma.exchange.create({
-      data: {
-        offeringUserId: session.user.id,
-        offeredCardId,
-        wantedCardId,
-      },
-      include: {
-        offeringUser: { select: { id: true, name: true, image: true } },
-        offeredCard: { include: { card: true } },
-        wantedCard: true,
-      },
-    })
-
-    return NextResponse.json(exchange)
+    return NextResponse.json({ success: true })
   } catch (e) {
     console.error(e)
-    return NextResponse.json({ error: 'Failed to create exchange' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to complete exchange' }, { status: 500 })
   }
 }
