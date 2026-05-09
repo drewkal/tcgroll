@@ -61,12 +61,15 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
       {/* Hover popover — top 4 cards by value */}
       {topCards.length > 0 && (
         <div
-          className={cn(
-            'absolute bottom-full left-0 right-0 mb-2 z-50',
-            'glass rounded-2xl border border-white/10 p-3',
-            'transition-all duration-200 origin-bottom',
-            hovered ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95 pointer-events-none',
-          )}
+          className="absolute left-0 right-0 z-[100] rounded-2xl border border-white/10 p-3"
+          style={{
+            top: 'calc(100% + 6px)',
+            background: 'rgba(15,22,41,0.97)',
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? 'translateY(0) scale(1)' : 'translateY(-6px) scale(0.97)',
+            transition: 'opacity 0.15s ease, transform 0.15s ease',
+            pointerEvents: hovered ? 'auto' : 'none',
+          }}
         >
           <p className="text-[10px] font-mono text-slate-500 tracking-widest mb-2.5 flex items-center gap-1">
             <Sparkles size={9} className="text-yellow-400" /> TOP PULLS

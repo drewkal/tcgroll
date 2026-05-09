@@ -90,10 +90,13 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          caseCards: caseCards.map(cc => ({ cardId: cc.cardId, dropRate: cc.dropRate })),
+          price: parseFloat(String(form.price)),
+          cardCount: parseInt(String(form.cardCount), 10),
+          caseCards: caseCards.map(cc => ({ cardId: cc.cardId, dropRate: parseFloat(String(cc.dropRate)) })),
         }),
       })
-      if (!res.ok) { toast.error('Failed to save case'); return }
+      const data = await res.json()
+      if (!res.ok) { toast.error(data.error || 'Failed to save case'); return }
       toast.success(isNew ? 'Case created!' : 'Case updated!')
       router.push('/admin')
     } finally {
