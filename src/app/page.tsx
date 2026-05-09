@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
+import { HeroVisual } from '@/components/hero-visual'
 import { GAMES, GAME_SLUGS } from '@/lib/games'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 
@@ -23,6 +24,14 @@ async function getCasesByGame() {
   })
 }
 
+async function getHeroCards() {
+  return prisma.card.findMany({
+    orderBy: { value: 'desc' },
+    take: 3,
+    select: { id: true, name: true, imageUrl: true, rarity: true, game: true },
+  })
+}
+
 async function getSiteStats() {
   const [totalOpenings, totalUsers] = await Promise.all([
     prisma.caseOpening.count(),
@@ -32,10 +41,11 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats] = await Promise.all([
+  const [featuredCases, allCases, stats, heroCards] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
+    getHeroCards(),
   ])
 
   return (
@@ -76,7 +86,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-12 mt-20">
+          <HeroVisual cards={heroCards as any} />
+
+          <div className="flex items-center justify-center gap-12 mt-8">
             {[
               { label: 'Cases Opened', value: stats.totalOpenings.toLocaleString() },
               { label: 'Trainers', value: stats.totalUsers.toLocaleString() },
