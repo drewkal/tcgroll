@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
+import { CardBanner } from '@/components/cards/card-banner'
 import { GAMES, GAME_SLUGS } from '@/lib/games'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 
@@ -23,6 +24,14 @@ async function getCasesByGame() {
   })
 }
 
+async function getShowcaseCards() {
+  return prisma.card.findMany({
+    orderBy: { value: 'desc' },
+    take: 24,
+    select: { id: true, name: true, imageUrl: true, rarity: true, game: true },
+  })
+}
+
 async function getSiteStats() {
   const [totalOpenings, totalUsers] = await Promise.all([
     prisma.caseOpening.count(),
@@ -32,14 +41,17 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats] = await Promise.all([
+  const [featuredCases, allCases, stats, showcaseCards] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
+    getShowcaseCards(),
   ])
 
   return (
     <div className="min-h-screen">
+
+      <CardBanner cards={showcaseCards as any} />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32 px-4">

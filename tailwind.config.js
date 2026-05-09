@@ -46,6 +46,8 @@ module.exports = {
         'card': '0 20px 60px rgba(0,0,0,0.6)',
       },
       animation: {
+        'marquee-left': 'marquee-left 40s linear infinite',
+        'marquee-right': 'marquee-right 32s linear infinite',
         'shimmer': 'shimmer 2s infinite',
         'float': 'float 3s ease-in-out infinite',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
@@ -56,6 +58,14 @@ module.exports = {
         'particle': 'particle 1s ease-out forwards',
       },
       keyframes: {
+        'marquee-left': {
+          '0%':   { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        'marquee-right': {
+          '0%':   { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
         shimmer: {
           '0%': { backgroundPosition: '-200% center' },
           '100%': { backgroundPosition: '200% center' },
