@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Package, LayoutGrid, BookOpen, User, LogOut, Shield, Menu, X } from 'lucide-react'
+import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X } from 'lucide-react'
 
 export function Navbar() {
   const { data: session } = useSession()
@@ -12,6 +12,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/cases', label: 'Cases', icon: Package },
+    { href: '/exchange', label: 'Exchange', icon: ArrowLeftRight },
     { href: '/collection', label: 'Collection', icon: LayoutGrid },
   ]
 

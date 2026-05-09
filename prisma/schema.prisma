@@ -21,12 +21,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  userCards     UserCard[]
-  transactions  Transaction[]
-  openings      CaseOpening[]
-  withdrawals   WithdrawRequest[]
+  accounts           Account[]
+  sessions           Session[]
+  userCards          UserCard[]
+  transactions       Transaction[]
+  openings           CaseOpening[]
+  withdrawals        WithdrawRequest[]
+  exchangesOffering  Exchange[]        @relation("ExchangeOffering")
+  exchangesAccepting Exchange[]        @relation("ExchangeAccepting")
 }
 
 model Account {
@@ -97,9 +99,10 @@ model Card {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  caseCards   CaseCard[]
-  userCards   UserCard[]
-  openingCards OpeningCard[]
+  caseCards      CaseCard[]
+  userCards      UserCard[]
+  openingCards   OpeningCard[]
+  exchangesWanted Exchange[]   @relation("ExchangeWanted")
 }
 
 model CaseCard {
@@ -123,9 +126,11 @@ model UserCard {
   sold       Boolean  @default(false)
   withdrawn  Boolean  @default(false)
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card          Card           @relation(fields: [cardId], references: [id])
-  withdrawCards WithdrawCard[]
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card            Card           @relation(fields: [cardId], references: [id])
+  withdrawCards   WithdrawCard[]
+  exchangeOffered Exchange?      @relation("ExchangeOffered")
+  exchangeAccepted Exchange?     @relation("ExchangeAccepted")
 }
 
 model CaseOpening {
@@ -215,6 +220,34 @@ enum TransactionType {
   PURCHASE
   SALE
   REFUND
+  EXCHANGE
+}
+
+model Exchange {
+  id               String         @id @default(cuid())
+  createdAt        DateTime       @default(now())
+  status           ExchangeStatus @default(OPEN)
+
+  offeringUserId   String
+  offeringUser     User           @relation("ExchangeOffering", fields: [offeringUserId], references: [id], onDelete: Cascade)
+  offeredCardId    String         @unique
+  offeredCard      UserCard       @relation("ExchangeOffered", fields: [offeredCardId], references: [id])
+
+  wantedCardId     String
+  wantedCard       Card           @relation("ExchangeWanted", fields: [wantedCardId], references: [id])
+
+  acceptingUserId  String?
+  acceptingUser    User?          @relation("ExchangeAccepting", fields: [acceptingUserId], references: [id])
+  acceptedCardId   String?        @unique
+  acceptedCard     UserCard?      @relation("ExchangeAccepted", fields: [acceptedCardId], references: [id])
+
+  completedAt      DateTime?
+}
+
+enum ExchangeStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
 }
 
 model WithdrawRequest {

@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     const rarity = searchParams.get('rarity')
     const type = searchParams.get('type')
     const search = searchParams.get('search')
+    const limit = searchParams.get('limit')
 
     const cards = await prisma.card.findMany({
       where: {
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
         ...(search && { name: { contains: search, mode: 'insensitive' } }),
       },
       orderBy: [{ rarity: 'desc' }, { value: 'desc' }],
+      ...(limit && { take: parseInt(limit, 10) }),
     })
 
     return NextResponse.json(cards)
