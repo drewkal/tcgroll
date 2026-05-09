@@ -4,6 +4,7 @@ import './globals.css'
 import { Providers } from '@/components/providers'
 import { Navbar } from '@/components/layout/navbar'
 import { Toaster } from 'react-hot-toast'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: 'TCGRoll — Pokémon Card Case Opening',
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </Providers>
+        <Analytics />
       </body>
       <footer className="border-t border-white/5 py-8 mt-20">
   <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
