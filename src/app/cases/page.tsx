@@ -7,12 +7,18 @@ import { Package, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 async function getCasesByGame() {
-  const cases = await prisma.cardCase.findMany({
+  return prisma.cardCase.findMany({
     where: { active: true },
-    include: { _count: { select: { openings: true } } },
+    include: {
+      _count: { select: { openings: true } },
+      caseCards: {
+        include: { card: true },
+        orderBy: { card: { value: 'desc' } },
+        take: 4,
+      },
+    },
     orderBy: { price: 'asc' },
   })
-  return cases
 }
 
 export default async function CasesPage() {
@@ -63,7 +69,7 @@ export default async function CasesPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {preview.map(cardCase => (
-                  <CaseCard key={cardCase.id} cardCase={cardCase} />
+                  <CaseCard key={cardCase.id} cardCase={cardCase} topCards={cardCase.caseCards as any} />
                 ))}
               </div>
             )}

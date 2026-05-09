@@ -24,7 +24,14 @@ export default async function GameCasesPage({
 
   const allCases = await prisma.cardCase.findMany({
     where: { active: true, game: game.enum },
-    include: { _count: { select: { openings: true } } },
+    include: {
+      _count: { select: { openings: true } },
+      caseCards: {
+        include: { card: true },
+        orderBy: { card: { value: 'desc' } },
+        take: 4,
+      },
+    },
     orderBy: { price: 'asc' },
   })
 
@@ -80,7 +87,7 @@ export default async function GameCasesPage({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map(cardCase => (
-            <CaseCard key={cardCase.id} cardCase={cardCase} />
+            <CaseCard key={cardCase.id} cardCase={cardCase} topCards={cardCase.caseCards as any} />
           ))}
         </div>
       )}

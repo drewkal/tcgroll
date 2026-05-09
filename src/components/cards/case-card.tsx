@@ -2,9 +2,22 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState, useRef } from 'react'
 import { formatCurrency, getTierLabel } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { Package, Users, ChevronRight } from 'lucide-react'
+import { getRarityColor } from '@/lib/opening-engine'
+import { Package, Users, ChevronRight, Sparkles } from 'lucide-react'
+
+interface TopCard {
+  card: {
+    id: string
+    name: string
+    imageUrl: string | null
+    rarity: string
+    value: number
+    game: string
+  }
+}
 
 interface CaseCardProps {
   cardCase: {
@@ -18,6 +31,7 @@ interface CaseCardProps {
     cardCount: number
     _count?: { openings: number }
   }
+  topCards?: TopCard[]
   featured?: boolean
 }
 
@@ -29,10 +43,69 @@ const tierStyles: Record<string, { border: string; badge: string; glow: string }
   LEGENDARY: { border: 'border-yellow-400/60', badge: 'bg-yellow-400/30 text-yellow-300', glow: 'legendary-glow' },
 }
 
-export function CaseCard({ cardCase, featured }: CaseCardProps) {
+const GAME_EMOJI: Record<string, string> = {
+  POKEMON: '⚡', ONE_PIECE: '☠️', MAGIC: '✨', DRAGON_BALL: '🐉',
+}
+
+export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
   const styles = tierStyles[cardCase.tier] ?? tierStyles.STANDARD
+  const [hovered, setHovered] = useState(false)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const onEnter = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    setHovered(true)
+  }
+  const onLeave = () => {
+    hideTimer.current = setTimeout(() => setHovered(false), 120)
+  }
 
   return (
+    <div className="relative" onMouseEnter={onEnter} onMouseLeave={onLeave}>
+
+      {/* Hover popover — top 4 cards by value */}
+      {topCards.length > 0 && (
+        <div
+          className={cn(
+            'absolute bottom-full left-0 right-0 mb-2 z-50',
+            'glass rounded-2xl border border-white/10 p-3',
+            'transition-all duration-200 origin-bottom pointer-events-none',
+            hovered ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95',
+          )}
+        >
+          <p className="text-[10px] font-mono text-slate-500 tracking-widest mb-2.5 flex items-center gap-1">
+            <Sparkles size={9} className="text-yellow-400" /> TOP PULLS
+          </p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {topCards.map(({ card }) => {
+              const color = getRarityColor(card.rarity)
+              return (
+                <div key={card.id} className="flex flex-col gap-1">
+                  <div
+                    className="relative w-full rounded-lg overflow-hidden"
+                    style={{ aspectRatio: '3/4', border: `1px solid ${color}50` }}
+                  >
+                    <div className="absolute top-0 inset-x-0 h-0.5 z-10" style={{ backgroundColor: color }} />
+                    {card.imageUrl ? (
+                      <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center text-base"
+                        style={{ background: `linear-gradient(135deg, ${color}25 0%, #0a0e1a 100%)` }}
+                      >
+                        {GAME_EMOJI[card.game] ?? '🃏'}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[9px] text-white leading-tight truncate text-center">{card.name}</p>
+                  <p className="text-[9px] font-mono text-center" style={{ color }}>{formatCurrency(card.value)}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
     <Link
       href={`/open/${cardCase.slug}`}
       className={cn(
@@ -99,6 +172,7 @@ export function CaseCard({ cardCase, featured }: CaseCardProps) {
         </div>
       </div>
     </Link>
+    </div>
   )
 }
 
