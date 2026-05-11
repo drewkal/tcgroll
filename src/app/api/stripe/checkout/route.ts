@@ -1,7 +1,7 @@
 // src/app/api/stripe/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { getStripe, CREDIT_PACKAGES } from '@/lib/stripe'
+import { getStripe, TOKEN_PACKAGES } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,11 +11,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { packageId } = await req.json()
-    const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
+    const pkg = TOKEN_PACKAGES.find(p => p.id === packageId)
+    if (!pkg) return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
 
-    if (!pkg) {
-      return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
-    }
+    const baseUrl = process.env.NEXTAUTH_URL!
 
     const checkoutSession = await getStripe().checkout.sessions.create({
       mode: 'payment',
@@ -25,9 +24,10 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `TCGRoll Credits — $${pkg.credits} Balance`,
-              description: `Add $${pkg.credits}.00 to your TCGRoll balance`,
-              images: [`${process.env.NEXTAUTH_URL}/logo.png`],
+              name: `🪙 ${pkg.tokens.toLocaleString()} TCGRoll Tokens`,
+              description: pkg.bonus > 0
+                ? `${(pkg.tokens - pkg.bonus).toLocaleString()} tokens + ${pkg.bonus.toLocaleString()} bonus`
+                : `${pkg.tokens.toLocaleString()} tokens added to your balance`,
             },
             unit_amount: pkg.price,
           },
@@ -36,11 +36,11 @@ export async function POST(req: NextRequest) {
       ],
       metadata: {
         userId: session.user.id,
-        credits: pkg.credits,
+        tokens: String(pkg.tokens),
         packageId: pkg.id,
       },
-      success_url: `${process.env.NEXTAUTH_URL}/profile?deposit=success`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/profile?deposit=cancelled`,
+      success_url: `${baseUrl}/deposit?success=1`,
+      cancel_url: `${baseUrl}/deposit`,
     })
 
     return NextResponse.json({ url: checkoutSession.url })

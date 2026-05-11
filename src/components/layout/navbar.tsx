@@ -68,13 +68,17 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {session ? (
               <>
-                {/* Balance */}
-                <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-yellow-400/20 hover:border-yellow-400/40 transition-colors">
-                  <div className="w-2 h-2 rounded-full bg-yellow-400 shadow-gold-glow-sm" />
-                  <span className="font-mono text-sm text-yellow-400 font-medium">
-                    {formatCurrency(session.user.balance ?? 0)}
-                  </span>
-                </Link>
+                {/* Balance + buy tokens */}
+                <div className="flex items-center gap-1">
+                  <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-yellow-400/20 hover:border-yellow-400/40 transition-colors">
+                    <span className="font-mono text-sm text-yellow-400 font-medium">
+                      {formatCurrency(session.user.balance ?? 0)}
+                    </span>
+                  </Link>
+                  <Link href="/deposit" className="flex items-center justify-center w-7 h-7 rounded-lg bg-yellow-400/10 border border-yellow-400/20 hover:bg-yellow-400/20 hover:border-yellow-400/40 transition-colors text-yellow-400 font-bold text-sm">
+                    +
+                  </Link>
+                </div>
 
                 {/* Admin badge */}
                 {session.user.role === 'ADMIN' && (

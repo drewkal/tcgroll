@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { CREDIT_PACKAGES } from '@/lib/stripe'
 import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
@@ -64,7 +63,6 @@ function ProfilePageInner() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [openings, setOpenings] = useState<Opening[]>([])
   const [loading, setLoading] = useState(true)
-  const [depositLoading, setDepositLoading] = useState<string | null>(null)
   const [expandedOpening, setExpandedOpening] = useState<string | null>(null)
 
   useEffect(() => {
@@ -83,24 +81,6 @@ function ProfilePageInner() {
       .catch(() => toast.error('Failed to load stats'))
       .finally(() => setLoading(false))
   }, [session])
-
-  const handleDeposit = async (packageId: string) => {
-    setDepositLoading(packageId)
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId }),
-      })
-      const data = await res.json()
-      if (!res.ok) { toast.error(data.error); return }
-      window.location.href = data.url
-    } catch {
-      toast.error('Failed to initiate deposit')
-    } finally {
-      setDepositLoading(null)
-    }
-  }
 
   if (status === 'loading' || loading) {
     return (
@@ -272,39 +252,14 @@ function ProfilePageInner() {
       </div>
 
       {/* Deposit section */}
-      <div className="glass rounded-2xl border border-yellow-400/10 p-6">
-        <h2 className="font-display text-2xl text-white tracking-wide mb-2">ADD FUNDS</h2>
-        <p className="text-slate-400 text-sm mb-6">Powered by Stripe. All payments are secure and encrypted.</p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {CREDIT_PACKAGES.map(pkg => (
-            <button
-              key={pkg.id}
-              onClick={() => handleDeposit(pkg.id)}
-              disabled={depositLoading !== null}
-              className={cn(
-                'relative flex flex-col items-center p-4 rounded-xl border transition-all',
-                pkg.popular
-                  ? 'border-yellow-400/50 bg-yellow-400/10 hover:bg-yellow-400/20'
-                  : 'border-white/10 bg-navy-800 hover:border-yellow-400/30',
-                depositLoading === pkg.id && 'opacity-50',
-              )}
-            >
-              {pkg.popular && (
-                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-yellow-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">
-                  POPULAR
-                </div>
-              )}
-              <DollarSign size={18} className="text-yellow-400 mb-2" />
-              <div className="font-display text-2xl text-white">${pkg.credits}</div>
-              <div className="text-xs text-slate-400 font-mono">{pkg.label}</div>
-              {depositLoading === pkg.id && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </button>
-          ))}
+      <div className="glass rounded-2xl border border-yellow-400/10 p-6 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="font-display text-2xl text-white tracking-wide mb-1">ADD TOKENS</h2>
+          <p className="text-slate-400 text-sm">Buy token packages to open more cases. Powered by Stripe.</p>
         </div>
+        <Link href="/deposit" className="btn-gold px-6 py-3 rounded-xl font-display tracking-wider flex items-center gap-2 flex-shrink-0">
+          <Zap size={16} fill="black" /> Buy Tokens
+        </Link>
       </div>
 
       {/* Transaction history */}
