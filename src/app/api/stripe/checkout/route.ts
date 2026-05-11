@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
     const pkg = TOKEN_PACKAGES.find(p => p.id === packageId)
     if (!pkg) return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
 
-    const baseUrl = process.env.NEXTAUTH_URL!
+    const baseUrl = process.env.NEXTAUTH_URL
+      || `https://${req.headers.get('host')}`
 
     const checkoutSession = await getStripe().checkout.sessions.create({
       mode: 'payment',
