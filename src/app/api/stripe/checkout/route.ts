@@ -10,6 +10,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json({ error: 'Stripe is not configured' }, { status: 500 })
+    }
+
     const { packageId } = await req.json()
     const pkg = TOKEN_PACKAGES.find(p => p.id === packageId)
     if (!pkg) return NextResponse.json({ error: 'Invalid package' }, { status: 400 })
@@ -44,8 +48,8 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ url: checkoutSession.url })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Stripe checkout error:', error)
-    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 })
+    return NextResponse.json({ error: error?.message ?? 'Failed to create checkout session' }, { status: 500 })
   }
 }
