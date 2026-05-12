@@ -11,7 +11,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     const { id } = await params
     const body = await req.json()
-    const card = await prisma.card.update({ where: { id }, data: body })
+    const data = {
+      ...body,
+      value: parseFloat(String(body.value)),
+    }
+    const card = await prisma.card.update({ where: { id }, data })
     return NextResponse.json(card)
   } catch {
     return NextResponse.json({ error: 'Failed to update card' }, { status: 500 })

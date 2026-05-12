@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const card = await prisma.card.create({ data: body })
+    const card = await prisma.card.create({ data: { ...body, value: parseFloat(String(body.value)) } })
     return NextResponse.json(card, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create card' }, { status: 500 })
