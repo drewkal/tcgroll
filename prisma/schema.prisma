@@ -288,3 +288,13 @@ enum WithdrawStatus {
   DELIVERED
   CANCELLED
 }
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String   // twitter, instagram, tiktok, youtube, discord, reddit, facebook, twitch
+  url       String
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

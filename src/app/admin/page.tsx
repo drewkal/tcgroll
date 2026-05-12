@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus } from 'lucide-react'
+import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2 } from 'lucide-react'
 
 async function getAdminData() {
   const now = new Date()
@@ -224,6 +224,12 @@ export default async function AdminPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-700 border border-white/10 text-slate-300 hover:text-white text-sm font-display tracking-wider transition-colors"
             >
               <Layers size={14} /> Cards
+            </Link>
+            <Link
+              href="/admin/social"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-700 border border-white/10 text-slate-300 hover:text-white text-sm font-display tracking-wider transition-colors"
+            >
+              <Share2 size={14} /> Social
             </Link>
             <Link
               href="/admin/cases/new"

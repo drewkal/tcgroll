@@ -190,7 +190,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { icon: <Package size={32} className="text-yellow-400" />, step: '01', title: 'Choose Your Case', desc: 'Browse cases across Pokémon, One Piece, Magic, and Dragon Ball. Each has unique drop rates.' },
-              { icon: <Zap size={32} className="text-yellow-400" />, step: '02', title: 'Roll & Reveal', desc: 'Open your case and watch cards reveal on a cinematic reel. Every roll uses provably fair weighted randomness.' },
+              { icon: <Zap size={32} className="text-yellow-400" />, step: '02', title: 'Roll & Reveal', desc: 'Open your case and watch cards reveal on a cinematic reel. Every roll uses provably fair weighted randomness — drop rates are published and verifiable.' },
               { icon: <TrendingUp size={32} className="text-yellow-400" />, step: '03', title: 'Collect or Sell', desc: 'Keep your pulls or instantly sell them for balance. Withdraw physical cards at any time.' },
             ].map(({ icon, step, title, desc }) => (
               <div key={step} className="relative glass rounded-2xl p-8 border border-white/5 hover:border-yellow-400/20 transition-colors">
