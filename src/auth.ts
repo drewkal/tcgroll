@@ -51,6 +51,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       })
     ] : []),
   ],
+  events: {
+    async createUser({ user }) {
+      if (!user.id) return
+      await prisma.user.update({ where: { id: user.id }, data: { balance: 500 } })
+      await prisma.transaction.create({
+        data: { userId: user.id, amount: 500, type: 'DEPOSIT', description: '🪙 500 welcome bonus!' },
+      })
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
