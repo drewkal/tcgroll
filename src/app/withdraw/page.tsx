@@ -61,9 +61,13 @@ export default function WithdrawPage() {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }))
 
+  const MIN_WITHDRAW = 1000
+  const meetsMinimum = selectedValue >= MIN_WITHDRAW
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (selectedCards.size === 0) { toast.error('Select at least one card to withdraw'); return }
+    if (!meetsMinimum) { toast.error(`Minimum withdrawal is 🪙 1,000 tokens`); return }
     setSubmitting(true)
     try {
       const res = await fetch('/api/withdrawals', {
@@ -249,16 +253,25 @@ export default function WithdrawPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Total card value</span>
-                <span className="font-mono text-yellow-400">{formatCurrency(selectedValue)}</span>
+                <span className={cn('font-mono', meetsMinimum ? 'text-yellow-400' : 'text-red-400')}>{formatCurrency(selectedValue)}</span>
               </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Minimum required</span>
+                <span className="font-mono text-slate-500">🪙 1,000</span>
+              </div>
+              {selectedCards.size > 0 && !meetsMinimum && (
+                <p className="text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 mt-2">
+                  Add {formatCurrency(MIN_WITHDRAW - selectedValue)} more to meet the minimum
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={submitting || selectedCards.size === 0}
+              disabled={submitting || selectedCards.size === 0 || !meetsMinimum}
               className={cn(
                 'w-full py-4 rounded-xl font-display text-xl tracking-widest flex items-center justify-center gap-3 transition-all',
-                selectedCards.size > 0 ? 'btn-gold' : 'bg-navy-700 text-slate-500 cursor-not-allowed border border-white/5',
+                selectedCards.size > 0 && meetsMinimum ? 'btn-gold' : 'bg-navy-700 text-slate-500 cursor-not-allowed border border-white/5',
               )}
             >
               {submitting

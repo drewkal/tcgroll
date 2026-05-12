@@ -38,10 +38,15 @@ export async function POST(req: NextRequest) {
       sold: false,
       withdrawn: false,
     },
+    include: { card: true },
   })
 
   if (userCards.length !== userCardIds.length)
     return NextResponse.json({ error: 'Some cards are unavailable' }, { status: 400 })
+
+  const totalValue = userCards.reduce((sum, uc) => sum + uc.card.value, 0)
+  if (totalValue < 1000)
+    return NextResponse.json({ error: 'Minimum withdrawal value is 🪙 1,000 tokens' }, { status: 400 })
 
   const withdrawal = await prisma.$transaction(async tx => {
     const req = await tx.withdrawRequest.create({
