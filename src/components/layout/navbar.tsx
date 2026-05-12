@@ -6,8 +6,9 @@ import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X } from 'lucide-react'
 import { Logo } from '@/components/logo'
+import Image from 'next/image'
 
-export function Navbar() {
+export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -24,7 +25,9 @@ export function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="hover:opacity-90 transition-opacity">
-            <Logo size="sm" />
+            {logoUrl
+              ? <Image src={logoUrl} alt="TCGRoll" width={160} height={40} className="object-contain h-9 w-auto" unoptimized />
+              : <Logo size="sm" />}
           </Link>
 
           {/* Desktop Nav */}

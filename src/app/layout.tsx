@@ -6,6 +6,7 @@ import { Navbar } from '@/components/layout/navbar'
 import { SiteFooter } from '@/components/layout/footer'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/next'
+import { getSettings } from '@/lib/settings'
 
 export const metadata: Metadata = {
   title: {
@@ -27,12 +28,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const logos = await getSettings(['logo_header', 'logo_footer'])
+
   return (
     <html lang="en" className="noise">
       <body className="mesh-bg min-h-screen">
         <Providers>
-          <Navbar />
+          <Navbar logoUrl={logos.logo_header || null} />
           <main className="min-h-screen">{children}</main>
           <Toaster
             position="bottom-right"
@@ -48,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </Providers>
-        <SiteFooter />
+        <SiteFooter logoUrl={logos.logo_footer || null} />
         <Analytics />
       </body>
     </html>

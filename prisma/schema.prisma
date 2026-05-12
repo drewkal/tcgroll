@@ -289,6 +289,12 @@ enum WithdrawStatus {
   CANCELLED
 }
 
+model SiteSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 model SocialLink {
   id        String   @id @default(cuid())
   platform  String   // twitter, instagram, tiktok, youtube, discord, reddit, facebook, twitch
