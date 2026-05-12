@@ -15,7 +15,7 @@ export async function SiteFooter({ logoUrl }: { logoUrl?: string | null }) {
     <footer className="border-t border-white/5 py-8 mt-20">
       <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-6">
         {logoUrl
-          ? <Image src={logoUrl} alt="TCGRoll" width={160} height={40} className="object-contain h-8 w-auto" unoptimized />
+          ? <Image src={logoUrl} alt="TCGRoll" width={200} height={52} className="object-contain h-11 w-auto" unoptimized />
           : <Logo size="sm" />}
 
         <div className="flex gap-6 text-sm text-slate-500">

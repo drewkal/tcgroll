@@ -26,7 +26,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
           {/* Logo */}
           <Link href="/" className="hover:opacity-90 transition-opacity">
             {logoUrl
-              ? <Image src={logoUrl} alt="TCGRoll" width={160} height={40} className="object-contain h-9 w-auto" unoptimized />
+              ? <Image src={logoUrl} alt="TCGRoll" width={220} height={56} className="object-contain h-12 w-auto" unoptimized />
               : <Logo size="sm" />}
           </Link>
 
