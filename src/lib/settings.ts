@@ -1,7 +1,7 @@
 // src/lib/settings.ts
 import { prisma } from './prisma'
 
-export type SettingKey = 'logo_header' | 'logo_footer'
+export type SettingKey = 'logo_header' | 'logo_footer' | 'hero_banner'
 
 export async function getSetting(key: SettingKey): Promise<string | null> {
   const row = await prisma.siteSetting.findUnique({ where: { key } })

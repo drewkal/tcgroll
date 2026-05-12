@@ -1,11 +1,13 @@
 // src/app/page.tsx
 export const dynamic = 'force-dynamic'
 import Link from 'next/link'
+import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
 import { HeroVisual } from '@/components/hero-visual'
 import { GAMES, GAME_SLUGS } from '@/lib/games'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
+import { getSetting } from '@/lib/settings'
 
 async function getFeaturedCases() {
   return prisma.cardCase.findMany({
@@ -41,15 +43,32 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, heroCards] = await Promise.all([
+  const [featuredCases, allCases, stats, heroCards, heroBanner] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getHeroCards(),
+    getSetting('hero_banner'),
   ])
 
   return (
     <div className="min-h-screen">
+
+      {/* Hero Banner */}
+      {heroBanner && (
+        <div className="relative w-full overflow-hidden" style={{ maxHeight: '480px' }}>
+          <Image
+            src={heroBanner}
+            alt="TCGRoll Hero Banner"
+            width={1400}
+            height={480}
+            className="w-full object-cover"
+            priority
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#080d1a]" />
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32 px-4">

@@ -6,11 +6,12 @@ import Image from 'next/image'
 import { ChevronLeft, Upload, Trash2, ImageIcon, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type Slot = 'logo_header' | 'logo_footer'
+type Slot = 'logo_header' | 'logo_footer' | 'hero_banner'
 
-const SLOTS: { key: Slot; label: string; desc: string; bg: string }[] = [
-  { key: 'logo_header', label: 'Header Logo',  desc: 'Shown in the top navigation bar',    bg: 'bg-navy-900' },
-  { key: 'logo_footer', label: 'Footer Logo',  desc: 'Shown at the bottom of every page',  bg: 'bg-navy-950' },
+const SLOTS: { key: Slot; label: string; desc: string; bg: string; wide?: boolean }[] = [
+  { key: 'logo_header', label: 'Header Logo',  desc: 'Shown in the top navigation bar',              bg: 'bg-navy-900' },
+  { key: 'logo_footer', label: 'Footer Logo',  desc: 'Shown at the bottom of every page',            bg: 'bg-navy-950' },
+  { key: 'hero_banner', label: 'Hero Banner',  desc: 'Full-width banner at the top of the homepage', bg: 'bg-navy-900', wide: true },
 ]
 
 function UploadZone({ slot, currentUrl, onUploaded, onCleared }: {
@@ -70,9 +71,9 @@ function UploadZone({ slot, currentUrl, onUploaded, onCleared }: {
       </div>
 
       {/* Current preview */}
-      <div className={cn('rounded-xl border border-white/10 flex items-center justify-center h-24 overflow-hidden', slotInfo.bg)}>
+      <div className={cn('rounded-xl border border-white/10 flex items-center justify-center overflow-hidden', slotInfo.bg, slotInfo.wide ? 'h-40' : 'h-24')}>
         {currentUrl ? (
-          <Image src={currentUrl} alt={slotInfo.label} width={240} height={80} className="object-contain max-h-20" unoptimized />
+          <Image src={currentUrl} alt={slotInfo.label} width={slotInfo.wide ? 700 : 240} height={slotInfo.wide ? 160 : 80} className={cn('object-cover w-full', slotInfo.wide ? 'max-h-40' : 'object-contain max-h-20')} unoptimized />
         ) : (
           <div className="flex items-center gap-2 text-slate-600">
             <ImageIcon size={20} />

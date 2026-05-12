@@ -11,7 +11,7 @@ async function requireAdmin() {
 
 export async function GET() {
   try { await requireAdmin() } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
-  const settings = await getSettings(['logo_header', 'logo_footer'])
+  const settings = await getSettings(['logo_header', 'logo_footer', 'hero_banner'])
   return NextResponse.json(settings)
 }
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const slot = form.get('slot') as string   // 'logo_header' | 'logo_footer'
   const file = form.get('file') as File | null
 
-  if (!slot || !['logo_header', 'logo_footer'].includes(slot))
+  if (!slot || !['logo_header', 'logo_footer', 'hero_banner'].includes(slot))
     return NextResponse.json({ error: 'Invalid slot' }, { status: 400 })
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try { await requireAdmin() } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   const { slot } = await req.json()
-  if (!['logo_header', 'logo_footer'].includes(slot))
+  if (!['logo_header', 'logo_footer', 'hero_banner'].includes(slot))
     return NextResponse.json({ error: 'Invalid slot' }, { status: 400 })
   await setSetting(slot as any, '')
   return NextResponse.json({ ok: true })

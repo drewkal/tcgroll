@@ -7,6 +7,6 @@ import { BrandingClient } from './client'
 export default async function AdminBrandingPage() {
   const session = await auth()
   if (!session?.user || session.user.role !== 'ADMIN') redirect('/')
-  const settings = await getSettings(['logo_header', 'logo_footer'])
+  const settings = await getSettings(['logo_header', 'logo_footer', 'hero_banner'])
   return <BrandingClient initial={settings} />
 }
