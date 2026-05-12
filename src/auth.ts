@@ -7,8 +7,7 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { authConfig } from './auth.config'
 import { sendEmail } from '@/lib/email'
-import { WelcomeEmail } from '@/emails/welcome'
-import React from 'react'
+import { welcomeEmail } from '@/emails/welcome'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -65,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         await sendEmail({
           to: user.email,
           subject: '🎉 Welcome to TCGRoll — your 🪙 500 tokens are ready!',
-          react: React.createElement(WelcomeEmail, { name: user.name ?? 'Trainer' }),
+          html: welcomeEmail({ name: user.name ?? 'Trainer' }),
         })
       }
     },

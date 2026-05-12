@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
-import { WelcomeEmail } from '@/emails/welcome'
-import React from 'react'
+import { welcomeEmail } from '@/emails/welcome'
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
     await sendEmail({
       to: email,
       subject: '🎉 Welcome to TCGRoll — your 🪙 500 tokens are ready!',
-      react: React.createElement(WelcomeEmail, { name }),
+      html: welcomeEmail({ name }),
     })
 
     return NextResponse.json({ success: true, message: 'Account created with 🪙 500 welcome bonus!' })

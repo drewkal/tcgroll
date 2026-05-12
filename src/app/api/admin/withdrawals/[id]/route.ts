@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
-import { WithdrawalShippedEmail } from '@/emails/withdrawal-shipped'
-import React from 'react'
+import { withdrawalShippedEmail } from '@/emails/withdrawal-shipped'
 
 export async function PATCH(
   req: NextRequest,
@@ -37,7 +36,7 @@ export async function PATCH(
     await sendEmail({
       to: before.email,
       subject: '📬 Your TCGRoll cards have shipped!',
-      react: React.createElement(WithdrawalShippedEmail, {
+      html: withdrawalShippedEmail({
         name: before.fullName,
         trackingNumber: resolvedTracking,
         cards: before.cards.map(wc => ({
