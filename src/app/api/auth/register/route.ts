@@ -22,20 +22,19 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name, balance: 5 }, // $5 signup bonus
+      data: { email, password: hashedPassword, name, balance: 500 },
     })
 
-    // Record signup bonus
     await prisma.transaction.create({
       data: {
         userId: user.id,
-        amount: 5,
+        amount: 500,
         type: 'DEPOSIT',
-        description: 'Welcome bonus!',
+        description: '🪙 500 welcome bonus!',
       },
     })
 
-    return NextResponse.json({ success: true, message: 'Account created with $5 welcome bonus!' })
+    return NextResponse.json({ success: true, message: 'Account created with 🪙 500 welcome bonus!' })
   } catch (error) {
     console.error('Register error:', error)
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
