@@ -12,6 +12,12 @@ import { getRarityColor } from '@/lib/opening-engine'
 import { Package, ChevronLeft, Zap, RotateCcw, Info, DollarSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+function fmtRate(rate: number): string {
+  if (rate >= 1)   return rate.toFixed(2) + '%'
+  if (rate >= 0.1) return rate.toFixed(3) + '%'
+  return rate.toFixed(4) + '%'
+}
+
 type CaseWithCards = {
   id: string
   name: string
@@ -437,7 +443,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                   <div key={rarity}>
                     <div className="flex justify-between text-xs mb-1">
                       <span style={{ color }}>{getRarityLabel(rarity)}</span>
-                      <span className="font-mono text-slate-400">{rate.toFixed(1)}%</span>
+                      <span className="font-mono text-slate-400">{fmtRate(rate)}</span>
                     </div>
                     <div className="h-1.5 rounded-full bg-navy-700 overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${Math.min(rate, 100)}%`, backgroundColor: color, boxShadow: `0 0 6px ${color}` }} />
@@ -508,7 +514,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                   {cardCase.caseCards.map(({ card, dropRate }) => (
                     <div key={card.id}>
                       <CardDisplay card={card} size="sm" />
-                      <div className="text-center text-xs font-mono text-slate-500 mt-1">{dropRate.toFixed(1)}%</div>
+                      <div className="text-center text-xs font-mono text-slate-500 mt-1">{fmtRate(dropRate)}</div>
                     </div>
                   ))}
                 </div>

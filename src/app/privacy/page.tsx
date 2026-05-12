@@ -1,4 +1,11 @@
 // src/app/privacy/page.tsx
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Read the TCGRoll Privacy Policy.',
+}
+
 export default function PrivacyPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">

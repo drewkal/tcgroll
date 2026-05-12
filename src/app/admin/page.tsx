@@ -5,10 +5,30 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers } from 'lucide-react'
+import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus } from 'lucide-react'
 
 async function getAdminData() {
-  const [totalUsers, totalOpenings, revenueAgg, cases, recentUsers] = await Promise.all([
+  const now = new Date()
+  const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0)
+  const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - 7); startOfWeek.setHours(0, 0, 0, 0)
+  const startOfLastWeek = new Date(now); startOfLastWeek.setDate(now.getDate() - 14); startOfLastWeek.setHours(0, 0, 0, 0)
+
+  // Build last-14-days buckets for openings sparkline
+  const last14Days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(now)
+    d.setDate(now.getDate() - (13 - i))
+    d.setHours(0, 0, 0, 0)
+    return d
+  })
+
+  const [
+    totalUsers, totalOpenings, revenueAgg, cases, recentUsers,
+    newUsersThisWeek, newUsersLastWeek,
+    openingsThisWeek, openingsLastWeek,
+    revenueThisWeek, revenueLastWeek,
+    pendingWithdrawals,
+    recentOpenings,
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.caseOpening.count(),
     prisma.transaction.aggregate({ where: { type: 'DEPOSIT' }, _sum: { amount: true } }),
@@ -21,13 +41,38 @@ async function getAdminData() {
       take: 10,
       select: { id: true, name: true, email: true, balance: true, createdAt: true, role: true },
     }),
+    prisma.user.count({ where: { createdAt: { gte: startOfWeek } } }),
+    prisma.user.count({ where: { createdAt: { gte: startOfLastWeek, lt: startOfWeek } } }),
+    prisma.caseOpening.count({ where: { createdAt: { gte: startOfWeek } } }),
+    prisma.caseOpening.count({ where: { createdAt: { gte: startOfLastWeek, lt: startOfWeek } } }),
+    prisma.transaction.aggregate({ where: { type: 'DEPOSIT', createdAt: { gte: startOfWeek } }, _sum: { amount: true } }),
+    prisma.transaction.aggregate({ where: { type: 'DEPOSIT', createdAt: { gte: startOfLastWeek, lt: startOfWeek } }, _sum: { amount: true } }),
+    prisma.withdrawRequest.count({ where: { status: 'PENDING' } }),
+    prisma.caseOpening.findMany({
+      where: { createdAt: { gte: last14Days[0] } },
+      select: { createdAt: true },
+    }),
   ])
+
+  // Bucket openings into 14 daily slots
+  const openingsByDay = last14Days.map(dayStart => {
+    const dayEnd = new Date(dayStart); dayEnd.setDate(dayStart.getDate() + 1)
+    return {
+      label: dayStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      count: recentOpenings.filter(o => o.createdAt >= dayStart && o.createdAt < dayEnd).length,
+    }
+  })
+
   return {
-    totalUsers,
-    totalOpenings,
+    totalUsers, totalOpenings,
     totalRevenue: revenueAgg._sum.amount ?? 0,
-    cases,
-    recentUsers,
+    cases, recentUsers,
+    newUsersThisWeek, newUsersLastWeek,
+    openingsThisWeek, openingsLastWeek,
+    revenueThisWeek: revenueThisWeek._sum.amount ?? 0,
+    revenueLastWeek: revenueLastWeek._sum.amount ?? 0,
+    pendingWithdrawals,
+    openingsByDay,
   }
 }
 
@@ -48,19 +93,110 @@ export default async function AdminPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        {[
-          { label: 'Total Users', value: data.totalUsers.toString(), icon: Users, color: 'text-blue-400' },
-          { label: 'Total Openings', value: data.totalOpenings.toLocaleString(), icon: Package, color: 'text-purple-400' },
-          { label: 'Total Revenue', value: formatCurrency(data.totalRevenue), icon: DollarSign, color: 'text-green-400' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="glass rounded-2xl border border-white/5 p-6">
-            <Icon size={24} className={`${color} mb-3`} />
-            <div className="font-display text-4xl text-white">{value}</div>
-            <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">{label}</div>
+      {/* Stats row 1 — totals + trends */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* Users */}
+        {(() => {
+          const diff = data.newUsersThisWeek - data.newUsersLastWeek
+          const up = diff > 0; const flat = diff === 0
+          return (
+            <div className="glass rounded-2xl border border-white/5 p-6">
+              <Users size={20} className="text-blue-400 mb-3" />
+              <div className="font-display text-4xl text-white">{data.totalUsers.toLocaleString()}</div>
+              <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">TOTAL USERS</div>
+              <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${up ? 'text-green-400' : flat ? 'text-slate-500' : 'text-red-400'}`}>
+                {up ? <ArrowUp size={11} /> : flat ? <Minus size={11} /> : <ArrowDown size={11} />}
+                +{data.newUsersThisWeek} this week
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Openings */}
+        {(() => {
+          const diff = data.openingsThisWeek - data.openingsLastWeek
+          const up = diff > 0; const flat = diff === 0
+          const pct = data.openingsLastWeek > 0 ? Math.round(Math.abs(diff) / data.openingsLastWeek * 100) : null
+          return (
+            <div className="glass rounded-2xl border border-white/5 p-6">
+              <Package size={20} className="text-purple-400 mb-3" />
+              <div className="font-display text-4xl text-white">{data.totalOpenings.toLocaleString()}</div>
+              <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">TOTAL OPENINGS</div>
+              <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${up ? 'text-green-400' : flat ? 'text-slate-500' : 'text-red-400'}`}>
+                {up ? <ArrowUp size={11} /> : flat ? <Minus size={11} /> : <ArrowDown size={11} />}
+                {data.openingsThisWeek} this week{pct !== null ? ` (${up ? '+' : '-'}${pct}%)` : ''}
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Revenue */}
+        {(() => {
+          const diff = data.revenueThisWeek - data.revenueLastWeek
+          const up = diff > 0; const flat = diff === 0
+          return (
+            <div className="glass rounded-2xl border border-white/5 p-6">
+              <DollarSign size={20} className="text-green-400 mb-3" />
+              <div className="font-display text-3xl text-white">{formatCurrency(data.totalRevenue)}</div>
+              <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">TOTAL REVENUE</div>
+              <div className={`flex items-center gap-1 mt-2 text-xs font-mono ${up ? 'text-green-400' : flat ? 'text-slate-500' : 'text-red-400'}`}>
+                {up ? <ArrowUp size={11} /> : flat ? <Minus size={11} /> : <ArrowDown size={11} />}
+                {formatCurrency(data.revenueThisWeek)} this week
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Pending withdrawals */}
+        <Link href="/admin/withdrawals" className="glass rounded-2xl border border-white/5 p-6 hover:border-yellow-400/20 transition-colors block">
+          <Truck size={20} className="text-yellow-400 mb-3" />
+          <div className={`font-display text-4xl ${data.pendingWithdrawals > 0 ? 'text-yellow-400' : 'text-white'}`}>
+            {data.pendingWithdrawals}
           </div>
-        ))}
+          <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">PENDING WITHDRAWALS</div>
+          {data.pendingWithdrawals > 0 && (
+            <div className="flex items-center gap-1 mt-2 text-xs font-mono text-yellow-400">
+              <AlertCircle size={11} /> Needs attention
+            </div>
+          )}
+        </Link>
+      </div>
+
+      {/* Openings sparkline — last 14 days */}
+      <div className="glass rounded-2xl border border-white/5 p-6">
+        <div className="flex items-center gap-2 mb-5">
+          <TrendingUp size={18} className="text-yellow-400" />
+          <h2 className="font-display text-xl tracking-wide text-white">OPENINGS — LAST 14 DAYS</h2>
+        </div>
+        {(() => {
+          const max = Math.max(...data.openingsByDay.map(d => d.count), 1)
+          return (
+            <div className="flex items-end gap-1.5 h-20">
+              {data.openingsByDay.map((day, i) => {
+                const pct = (day.count / max) * 100
+                const isToday = i === data.openingsByDay.length - 1
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-navy-800 border border-white/10 rounded px-1.5 py-0.5 text-xs font-mono text-white whitespace-nowrap z-10">
+                      {day.label}: {day.count}
+                    </div>
+                    <div className="w-full rounded-t transition-all"
+                      style={{
+                        height: `${Math.max(pct, 4)}%`,
+                        backgroundColor: isToday ? '#facc15' : '#7c3aed',
+                        opacity: day.count === 0 ? 0.2 : 1,
+                      }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
+        <div className="flex justify-between mt-2 text-xs font-mono text-slate-600">
+          <span>{data.openingsByDay[0]?.label}</span>
+          <span>Today</span>
+        </div>
       </div>
 
       {/* Cases management */}

@@ -6,6 +6,21 @@ import { getGame, GAME_SLUGS } from '@/lib/games'
 import { notFound } from 'next/navigation'
 import { Package, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ game: string }> }): Promise<Metadata> {
+  const { game: gameSlug } = await params
+  const game = getGame(gameSlug)
+  if (!game) return {}
+  const title = `${game.label} Cases | TCGRoll`
+  const description = `Open virtual ${game.label} card cases on TCGRoll. ${game.description}`
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary', title, description },
+  }
+}
 
 const TIERS = ['ALL', 'STARTER', 'STANDARD', 'PREMIUM', 'ELITE', 'LEGENDARY']
 

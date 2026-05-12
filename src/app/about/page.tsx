@@ -1,6 +1,12 @@
 // src/app/about/page.tsx
+import { Metadata } from 'next'
 import Link from 'next/link'
 import { Zap, Package, TrendingUp, Shield } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'About TCGRoll',
+  description: 'Learn about TCGRoll — the virtual TCG case opening platform for Pokémon, One Piece, Magic, and Dragon Ball fans.',
+}
 
 export default function AboutPage() {
   return (

@@ -1,4 +1,11 @@
 // src/app/terms/page.tsx
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'Read the TCGRoll Terms of Service.',
+}
+
 export default function TermsPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">

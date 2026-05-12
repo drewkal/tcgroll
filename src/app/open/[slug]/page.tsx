@@ -3,6 +3,22 @@ export const dynamic = 'force-dynamic'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { CaseOpeningClient } from './client'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const c = await prisma.cardCase.findFirst({ where: { slug, active: true }, select: { name: true, description: true, game: true, price: true } })
+  if (!c) return {}
+  const gameLabel = c.game.charAt(0) + c.game.slice(1).toLowerCase().replace('_', ' ')
+  const title = `Open ${c.name} | TCGRoll`
+  const description = c.description ?? `Open the ${c.name} virtual ${gameLabel} case on TCGRoll. Pull rare cards with published drop rates.`
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'website' },
+    twitter: { card: 'summary', title, description },
+  }
+}
 
 async function getCase(slug: string) {
   return prisma.cardCase.findFirst({
