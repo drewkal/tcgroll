@@ -81,7 +81,7 @@ export default async function HomePage() {
               <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link href="/register" className="px-8 py-4 rounded-xl text-lg font-display tracking-widest border border-white/10 text-white hover:bg-white/5 hover:border-white/20 transition-all flex items-center gap-2">
-              Start Free — $5 Bonus
+              Start Free — 🪙 500 Bonus
               <Zap size={16} className="text-yellow-400" />
             </Link>
           </div>
@@ -211,7 +211,7 @@ export default async function HomePage() {
           <div className="relative">
             <Shield size={48} className="text-yellow-400 mx-auto mb-6" />
             <h2 className="font-display text-5xl tracking-wide text-white mb-4">READY TO ROLL?</h2>
-            <p className="text-slate-400 mb-8">Create a free account and get $5 in bonus credits to start opening cases immediately.</p>
+            <p className="text-slate-400 mb-8">Create a free account and get 🪙 500 bonus tokens to start opening cases immediately.</p>
             <Link href="/register" className="btn-gold inline-flex items-center gap-2 px-10 py-4 rounded-xl font-display tracking-widest text-lg">
               Create Free Account
               <Zap size={18} className="fill-black" />
