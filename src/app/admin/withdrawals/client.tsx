@@ -144,6 +144,11 @@ function WithdrawalRow({ withdrawal: init }: { withdrawal: Withdrawal }) {
                   className="w-full bg-navy-800 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50 placeholder-slate-600 resize-none"
                 />
               </div>
+              {status === 'SHIPPED' && w.status !== 'SHIPPED' && tracking && (
+                <p className="text-xs text-purple-400 bg-purple-400/10 border border-purple-400/20 rounded-lg px-3 py-2 flex items-center gap-2">
+                  <Truck size={12} /> Shipping confirmation email will be sent on save
+                </p>
+              )}
               <button
                 onClick={save}
                 disabled={saving}

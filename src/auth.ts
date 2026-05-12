@@ -6,6 +6,9 @@ import GoogleProvider from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { authConfig } from './auth.config'
+import { sendEmail } from '@/lib/email'
+import { WelcomeEmail } from '@/emails/welcome'
+import React from 'react'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -58,6 +61,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       await prisma.transaction.create({
         data: { userId: user.id, amount: 500, type: 'DEPOSIT', description: '🪙 500 welcome bonus!' },
       })
+      if (user.email) {
+        await sendEmail({
+          to: user.email,
+          subject: '🎉 Welcome to TCGRoll — your 🪙 500 tokens are ready!',
+          react: React.createElement(WelcomeEmail, { name: user.name ?? 'Trainer' }),
+        })
+      }
     },
   },
   callbacks: {
