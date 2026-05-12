@@ -54,24 +54,22 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
 
-      {/* Hero Banner */}
-      {heroBanner && (
-        <div className="relative w-full overflow-hidden" style={{ maxHeight: '480px' }}>
-          <Image
-            src={heroBanner}
-            alt="TCGRoll Hero Banner"
-            width={1400}
-            height={480}
-            className="w-full object-cover"
-            priority
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#080d1a]" />
-        </div>
-      )}
-
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32 px-4">
+        {/* Hero background image */}
+        {heroBanner && (
+          <div className="absolute inset-0 pointer-events-none">
+            <Image
+              src={heroBanner}
+              alt=""
+              fill
+              className="object-cover object-center opacity-30"
+              priority
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#080d1a]/40 via-[#080d1a]/60 to-[#080d1a]" />
+          </div>
+        )}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-yellow-400/5 blur-3xl animate-pulse" />
           <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-blue-500/5 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
