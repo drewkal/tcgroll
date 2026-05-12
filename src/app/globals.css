@@ -8,13 +8,13 @@
   50%       { transform: translateY(-14px); }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
-  --font-display: 'Rajdhani', sans-serif;
-  --font-logo: 'Exo 2', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Playfair Display', serif;
+  --font-logo: 'Cormorant Garamond', serif;
+  --font-body: 'Lato', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 
   --bg-primary: #0a0e1a;
   --bg-secondary: #0f1629;
