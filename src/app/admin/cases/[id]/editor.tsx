@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
-import { Save, Trash2, ChevronLeft, Plus, X } from 'lucide-react'
+import { Save, Trash2, ChevronLeft, Plus, X, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { ImageUpload } from '@/components/image-upload'
 
@@ -327,6 +327,74 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
           </div>
         </div>
       </div>
+
+      {/* EV Panel */}
+      {(() => {
+        const cardCount = parseInt(String(form.cardCount), 10) || 1
+        const price = parseFloat(String(form.price)) || 0
+        const ev = totalDropRate > 0
+          ? caseCards.reduce((sum, cc) => sum + (cc.dropRate / totalDropRate) * cc.card.value, 0) * cardCount
+          : 0
+        const evRatio = price > 0 ? (ev / price) * 100 : 0
+        const houseEdge = 100 - evRatio
+        const topContributors = [...caseCards]
+          .map(cc => ({ ...cc, contribution: totalDropRate > 0 ? (cc.dropRate / totalDropRate) * cc.card.value * cardCount : 0 }))
+          .sort((a, b) => b.contribution - a.contribution)
+          .slice(0, 5)
+        return (
+          <div className="glass rounded-2xl border border-white/5 p-6 space-y-4">
+            <div className="flex items-center gap-3 border-b border-white/5 pb-3">
+              <TrendingUp size={18} className="text-yellow-400" />
+              <h2 className="font-display text-xl text-white tracking-wide">EXPECTED VALUE (EV)</h2>
+              <span className="text-xs font-mono text-slate-500 ml-1">per opening</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-navy-800 rounded-xl p-4 border border-white/5 text-center">
+                <div className="text-xs font-mono text-slate-400 tracking-wider mb-1">TOTAL EV</div>
+                <div className={`font-display text-2xl font-bold ${ev >= price ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {formatCurrency(ev)}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">avg return per open</div>
+              </div>
+              <div className="bg-navy-800 rounded-xl p-4 border border-white/5 text-center">
+                <div className="text-xs font-mono text-slate-400 tracking-wider mb-1">EV RATIO</div>
+                <div className={`font-display text-2xl font-bold ${evRatio >= 100 ? 'text-green-400' : evRatio >= 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+                  {evRatio.toFixed(1)}%
+                </div>
+                <div className="text-xs text-slate-500 mt-1">of case price</div>
+              </div>
+              <div className="bg-navy-800 rounded-xl p-4 border border-white/5 text-center">
+                <div className="text-xs font-mono text-slate-400 tracking-wider mb-1">HOUSE EDGE</div>
+                <div className={`font-display text-2xl font-bold ${houseEdge <= 0 ? 'text-red-400' : houseEdge <= 30 ? 'text-yellow-400' : 'text-green-400'}`}>
+                  {houseEdge.toFixed(1)}%
+                </div>
+                <div className="text-xs text-slate-500 mt-1">platform margin</div>
+              </div>
+            </div>
+
+            {topContributors.length > 0 && (
+              <div>
+                <div className="text-xs font-mono text-slate-400 tracking-wider mb-2">TOP EV CONTRIBUTORS</div>
+                <div className="space-y-1.5">
+                  {topContributors.map(cc => (
+                    <div key={cc.cardId} className="flex items-center gap-3 text-xs">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: rarityColors[cc.card.rarity] ?? '#9ca3af' }} />
+                      <div className="flex-1 text-slate-300 truncate">{cc.card.name}</div>
+                      <div className="font-mono text-slate-400">{totalDropRate > 0 ? ((cc.dropRate / totalDropRate) * 100).toFixed(2) : '0.00'}% chance</div>
+                      <div className="font-mono text-yellow-400 w-16 text-right">+{formatCurrency(cc.contribution)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {caseCards.length === 0 && (
+              <p className="text-slate-500 text-sm text-center py-2">Add cards to see EV calculation</p>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Action buttons */}
       <div className="flex items-center justify-between pt-4">
