@@ -25,7 +25,7 @@ export function GameCardVisual({ cards, color }: { cards: GameCard[]; color: str
   useEffect(() => { const t = setTimeout(() => setVisible(true), 150); return () => clearTimeout(t) }, [])
 
   return (
-    <div className="relative select-none hidden sm:block flex-shrink-0" style={{ width: 180, height: 120 }}>
+    <div className="relative select-none" style={{ width: 180, height: 120 }}>
       {cards.slice(0, 3).map((card, i) => {
         const slot  = SLOTS[i]
         const rColor = getRarityColor(card.rarity)

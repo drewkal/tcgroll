@@ -136,8 +136,13 @@ export default async function HomePage() {
 
           return (
             <div key={slug}>
+              {/* Floating cards centered above header */}
+              <div className="flex justify-center relative z-10 mb-[-44px]">
+                <GameCardVisual cards={gameCards[game.enum] ?? []} color={game.color} />
+              </div>
+
               {/* Game header */}
-              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 py-6 mb-6 flex items-center justify-between`}>
+              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 pt-14 pb-6 mb-6 flex items-center justify-between`}>
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-2xl">{game.emoji}</span>
@@ -145,16 +150,13 @@ export default async function HomePage() {
                   </div>
                   <p className="text-slate-400 text-sm max-w-md">{game.description}</p>
                 </div>
-                <div className="flex items-center gap-6">
-                  <GameCardVisual cards={gameCards[game.enum] ?? []} color={game.color} />
-                  <Link
-                    href={`/cases/${slug}`}
-                    className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display tracking-wider text-sm transition-all flex-shrink-0"
-                    style={{ backgroundColor: game.color + '20', color: game.color, border: `1px solid ${game.color}40` }}
-                  >
-                    View All <ChevronRight size={14} />
-                  </Link>
-                </div>
+                <Link
+                  href={`/cases/${slug}`}
+                  className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display tracking-wider text-sm transition-all flex-shrink-0"
+                  style={{ backgroundColor: game.color + '20', color: game.color, border: `1px solid ${game.color}40` }}
+                >
+                  View All <ChevronRight size={14} />
+                </Link>
               </div>
 
               {gameCases.length === 0 ? (
