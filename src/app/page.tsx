@@ -4,8 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
-import { HeroVisual } from '@/components/hero-visual'
 import { GAMES, GAME_SLUGS } from '@/lib/games'
+import { GameCardVisual } from '@/components/game-card-visual'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSetting } from '@/lib/settings'
 
@@ -26,12 +26,17 @@ async function getCasesByGame() {
   })
 }
 
-async function getHeroCards() {
-  return prisma.card.findMany({
-    orderBy: { value: 'desc' },
-    take: 3,
-    select: { id: true, name: true, imageUrl: true, rarity: true, game: true },
-  })
+async function getGameCards() {
+  const games = ['POKEMON', 'ONE_PIECE', 'MAGIC', 'DRAGON_BALL'] as const
+  const results = await Promise.all(
+    games.map(game => prisma.card.findMany({
+      where: { game },
+      orderBy: { value: 'desc' },
+      take: 3,
+      select: { id: true, name: true, imageUrl: true, rarity: true, game: true },
+    }))
+  )
+  return Object.fromEntries(games.map((g, i) => [g, results[i]])) as Record<string, { id: string; name: string; imageUrl: string | null; rarity: string; game: string }[]>
 }
 
 async function getSiteStats() {
@@ -43,11 +48,11 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, heroCards, heroBanner] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, heroBanner] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
-    getHeroCards(),
+    getGameCards(),
     getSetting('hero_banner'),
   ])
 
@@ -103,8 +108,6 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <HeroVisual cards={heroCards as any} />
-
           <div className="flex items-center justify-center gap-12 mt-8">
             {[
               { label: 'Cases Opened', value: stats.totalOpenings.toLocaleString() },
@@ -134,8 +137,7 @@ export default async function HomePage() {
           return (
             <div key={slug}>
               {/* Game header */}
-              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 py-6 mb-6 flex items-center justify-between overflow-hidden`}>
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 text-7xl opacity-10 select-none">{game.emoji}</div>
+              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 py-6 mb-6 flex items-center justify-between`}>
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-2xl">{game.emoji}</span>
@@ -143,13 +145,16 @@ export default async function HomePage() {
                   </div>
                   <p className="text-slate-400 text-sm max-w-md">{game.description}</p>
                 </div>
-                <Link
-                  href={`/cases/${slug}`}
-                  className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display tracking-wider text-sm transition-all flex-shrink-0"
-                  style={{ backgroundColor: game.color + '20', color: game.color, border: `1px solid ${game.color}40` }}
-                >
-                  View All <ChevronRight size={14} />
-                </Link>
+                <div className="flex items-center gap-6">
+                  <GameCardVisual cards={gameCards[game.enum] ?? []} color={game.color} />
+                  <Link
+                    href={`/cases/${slug}`}
+                    className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-display tracking-wider text-sm transition-all flex-shrink-0"
+                    style={{ backgroundColor: game.color + '20', color: game.color, border: `1px solid ${game.color}40` }}
+                  >
+                    View All <ChevronRight size={14} />
+                  </Link>
+                </div>
               </div>
 
               {gameCases.length === 0 ? (
