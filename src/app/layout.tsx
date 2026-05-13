@@ -7,6 +7,7 @@ import { SiteFooter } from '@/components/layout/footer'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/next'
 import { getSettings } from '@/lib/settings'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" className="noise">
+      <head>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-9922Z4W1VB" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-9922Z4W1VB');
+        `}</Script>
+      </head>
       <body className="mesh-bg min-h-screen">
         <Providers>
           <Navbar logoUrl={logos.logo_header || null} />
