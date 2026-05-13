@@ -15,9 +15,9 @@ const GAME_EMOJI: Record<string, string> = {
 }
 
 const SLOTS = [
-  { offsetX: -64, rotate: -14, delay: '0.1s',  dur: '3.2s', z: 2 },
+  { offsetX: -96, rotate: -14, delay: '0.1s',  dur: '3.2s', z: 2 },
   { offsetX:   0, rotate:   0, delay: '0.5s',  dur: '2.8s', z: 3 },
-  { offsetX:  64, rotate:  14, delay: '0.3s',  dur: '3.5s', z: 2 },
+  { offsetX:  96, rotate:  14, delay: '0.3s',  dur: '3.5s', z: 2 },
 ]
 
 export function GameCardVisual({ cards, color }: { cards: GameCard[]; color: string }) {
@@ -25,7 +25,7 @@ export function GameCardVisual({ cards, color }: { cards: GameCard[]; color: str
   useEffect(() => { const t = setTimeout(() => setVisible(true), 150); return () => clearTimeout(t) }, [])
 
   return (
-    <div className="relative select-none" style={{ width: 180, height: 120 }}>
+    <div className="relative select-none" style={{ width: 280, height: 180 }}>
       {cards.slice(0, 3).map((card, i) => {
         const slot  = SLOTS[i]
         const rColor = getRarityColor(card.rarity)
@@ -47,12 +47,12 @@ export function GameCardVisual({ cards, color }: { cards: GameCard[]; color: str
               animationDelay: slot.delay,
             }}>
               <div style={{
-                width: 58,
-                height: 80,
-                borderRadius: 8,
+                width: 90,
+                height: 126,
+                borderRadius: 12,
                 overflow: 'hidden',
                 border: `2px solid ${rColor}80`,
-                boxShadow: `0 0 14px ${rColor}40, 0 6px 20px rgba(0,0,0,0.7)`,
+                boxShadow: `0 0 20px ${rColor}50, 0 10px 30px rgba(0,0,0,0.8)`,
                 position: 'relative',
               }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: rColor, zIndex: 1 }} />

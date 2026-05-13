@@ -137,12 +137,12 @@ export default async function HomePage() {
           return (
             <div key={slug}>
               {/* Floating cards centered above header */}
-              <div className="flex justify-center relative z-10 mb-[-44px]">
+              <div className="flex justify-center relative z-10 mb-[-70px]">
                 <GameCardVisual cards={gameCards[game.enum] ?? []} color={game.color} />
               </div>
 
               {/* Game header */}
-              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 pt-14 pb-6 mb-6 flex items-center justify-between`}>
+              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 pt-24 pb-6 mb-6 flex items-center justify-between`}>
                 <div>
                   <div className="flex items-center gap-3 mb-1">
                     <span className="text-2xl">{game.emoji}</span>
