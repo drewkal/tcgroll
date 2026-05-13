@@ -510,10 +510,10 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                 <p className="text-xs font-mono text-slate-500 tracking-widest mb-3">
                   {cardCase.caseCards.length} POSSIBLE CARDS
                 </p>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 max-h-[480px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto pr-1">
                   {cardCase.caseCards.map(({ card, dropRate }) => (
                     <div key={card.id}>
-                      <CardDisplay card={card} size="sm" />
+                      <CardDisplay card={card} size="md" />
                       <div className="text-center text-xs font-mono text-slate-500 mt-1">{fmtRate(dropRate)}</div>
                     </div>
                   ))}
