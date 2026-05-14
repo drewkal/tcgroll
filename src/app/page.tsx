@@ -90,9 +90,17 @@ export default async function HomePage() {
           <div className="absolute bottom-1/4 left-1/2 w-80 h-80 rounded-full bg-purple-500/4 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
-        <div className="relative max-w-5xl mx-auto text-center">
+        <div className="relative max-w-7xl mx-auto text-center">
+          {/* Floating game cards above logo */}
+          <div className="flex justify-center gap-4 mb-[-60px] relative z-10 pointer-events-none">
+            {GAME_SLUGS.map(slug => {
+              const game = GAMES[slug]
+              return <GameCardVisual key={slug} cards={gameCards[game.enum] ?? []} color={game.color} />
+            })}
+          </div>
+
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 relative z-0">
             {settings.logo_header
               ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={400} className="h-[400px] w-auto object-contain" unoptimized />
               : <Logo size="hero" />}
