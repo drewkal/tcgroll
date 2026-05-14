@@ -21,13 +21,13 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
   return (
     <nav className="sticky top-0 z-50 glass border-b border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
 
           {/* Logo */}
           <Link href="/" className="hover:opacity-90 transition-opacity">
             {logoUrl
-              ? <Image src={logoUrl} alt="TCGRoll" width={220} height={56} className="object-contain h-12 w-auto" unoptimized />
-              : <Logo size="sm" />}
+              ? <Image src={logoUrl} alt="TCGRoll" width={320} height={80} className="object-contain h-16 w-auto" unoptimized />
+              : <Logo size="lg" />}
           </Link>
 
           {/* Desktop Nav */}
