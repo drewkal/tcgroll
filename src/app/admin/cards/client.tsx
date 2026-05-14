@@ -4,8 +4,9 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { Plus, Save, X, Edit, Trash2 } from 'lucide-react'
+import { Plus, Save, X, Edit, Trash2, Upload } from 'lucide-react'
 import { ImageUpload } from '@/components/image-upload'
+import Link from 'next/link'
 
 const RARITIES = ['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY']
 const TYPES = ['NORMAL','FIRE','WATER','GRASS','ELECTRIC','ICE','FIGHTING','POISON','GROUND','FLYING','PSYCHIC','BUG','ROCK','GHOST','DRAGON','DARK','STEEL','FAIRY']
@@ -130,13 +131,22 @@ export function AdminCardsClient({ cards: initialCards }: { cards: Card[] }) {
           <p className="text-yellow-400 font-mono text-xs tracking-widest mb-1">— ADMIN</p>
           <h1 className="font-display text-5xl text-white tracking-wide">CARD MANAGEMENT</h1>
         </div>
-        <button
-          onClick={mode === 'none' ? openCreate : closeForm}
-          className="btn-gold px-5 py-2.5 rounded-xl font-display tracking-wider text-sm flex items-center gap-2"
-        >
-          {mode !== 'none' ? <X size={16} /> : <Plus size={16} />}
-          {mode !== 'none' ? 'Cancel' : 'New Card'}
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/cards/bulk-prices"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:border-white/20 transition-all text-sm font-display tracking-wider"
+          >
+            <Upload size={15} />
+            Bulk Prices
+          </Link>
+          <button
+            onClick={mode === 'none' ? openCreate : closeForm}
+            className="btn-gold px-5 py-2.5 rounded-xl font-display tracking-wider text-sm flex items-center gap-2"
+          >
+            {mode !== 'none' ? <X size={16} /> : <Plus size={16} />}
+            {mode !== 'none' ? 'Cancel' : 'New Card'}
+          </button>
+        </div>
       </div>
 
       {/* Create / Edit form */}
