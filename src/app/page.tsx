@@ -7,7 +7,8 @@ import { CaseCard } from '@/components/cards/case-card'
 import { GAMES, GAME_SLUGS } from '@/lib/games'
 import { GameCardVisual } from '@/components/game-card-visual'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
-import { getSetting } from '@/lib/settings'
+import { getSettings } from '@/lib/settings'
+import { Logo } from '@/components/logo'
 
 const TOP_CARDS_INCLUDE = {
   caseCards: {
@@ -56,12 +57,12 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, gameCards, heroBanner] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, settings] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getGameCards(),
-    getSetting('hero_banner'),
+    getSettings(['hero_banner', 'logo_header']),
   ])
 
   return (
@@ -70,10 +71,10 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32 px-4">
         {/* Hero background image */}
-        {heroBanner && (
+        {settings.hero_banner && (
           <div className="absolute inset-0 pointer-events-none">
             <Image
-              src={heroBanner}
+              src={settings.hero_banner}
               alt=""
               fill
               className="object-cover object-center opacity-30"
@@ -90,14 +91,21 @@ export default async function HomePage() {
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            {settings.logo_header
+              ? <Image src={settings.logo_header} alt="TCGRoll" width={320} height={80} className="h-20 w-auto object-contain" unoptimized />
+              : <Logo size="lg" />}
+          </div>
+
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-sm font-mono mb-8 animate-bounce-slow">
             <Zap size={14} className="fill-yellow-400" />
             Pokémon · One Piece · Magic · Dragon Ball
           </div>
 
           <h1 className="font-display text-7xl md:text-9xl tracking-wider text-white mb-4 leading-none">
-            OPEN. COLLECT.{' '}
-            <span className="text-glow-gold text-yellow-400">DOMINATE.</span>
+            Chase the{' '}
+            <span className="text-glow-gold text-yellow-400">Grail.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
