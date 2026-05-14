@@ -165,7 +165,7 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
                     </div>
                     <div style={{ width: 54, marginTop: 4, textAlign: 'center' }}>
                       <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.75)', lineHeight: 1.3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{card.name}</p>
-                      <p style={{ fontSize: 8, fontFamily: 'var(--font-mono)', color, marginTop: 1 }}>${(card.value / 100).toFixed(0)}</p>
+                      <p style={{ fontSize: 8, fontFamily: 'var(--font-mono)', color, marginTop: 1 }}>{formatCurrency(card.value)}</p>
                     </div>
                   </div>
                 )
