@@ -69,7 +69,7 @@ export default async function HomePage() {
     <div className="min-h-screen">
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-32 px-4">
+      <section className="relative overflow-hidden pt-6 pb-16 px-4">
         {/* Hero background image */}
         {settings.hero_banner && (
           <div className="absolute inset-0 pointer-events-none">
@@ -92,23 +92,23 @@ export default async function HomePage() {
 
         <div className="relative max-w-5xl mx-auto text-center">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-2">
             {settings.logo_header
               ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={400} className="h-[400px] w-auto object-contain" unoptimized />
               : <Logo size="hero" />}
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-sm font-mono mb-8 animate-bounce-slow">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-sm font-mono mb-3 animate-bounce-slow">
             <Zap size={14} className="fill-yellow-400" />
             Pokémon · One Piece · Magic · Dragon Ball
           </div>
 
-          <h1 className="font-display text-7xl md:text-9xl tracking-wider text-white mb-4 leading-none">
+          <h1 className="font-display text-7xl md:text-9xl tracking-wider text-white mb-3 leading-none">
             CHASE THE{' '}
             <span className="text-glow-gold text-yellow-400">GRAIL.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
             Roll virtual TCG cases with real rarity odds. Pull legendary holos,
             build your dream collection, and sell duplicates for balance.
           </p>
