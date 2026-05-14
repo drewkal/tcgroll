@@ -47,6 +47,13 @@ const GAME_EMOJI: Record<string, string> = {
   POKEMON: '⚡', ONE_PIECE: '☠️', MAGIC: '✨', DRAGON_BALL: '🐉',
 }
 
+const FAN_SLOTS = [
+  { rotate: -14, y: 8  },
+  { rotate: -5,  y: 2  },
+  { rotate:  5,  y: 2  },
+  { rotate:  14, y: 8  },
+]
+
 export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
   const styles = tierStyles[cardCase.tier] ?? tierStyles.STANDARD
   const [hovered, setHovered] = useState(false)
@@ -57,52 +64,6 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-
-      {/* Hover popover — top 4 cards by value */}
-      {topCards.length > 0 && (
-        <div
-          className="absolute left-0 right-0 z-[100] rounded-2xl border border-white/10 p-3"
-          style={{
-            top: 'calc(100% + 6px)',
-            background: 'rgba(15,22,41,0.97)',
-            opacity: hovered ? 1 : 0,
-            transform: hovered ? 'translateY(0) scale(1)' : 'translateY(-6px) scale(0.97)',
-            transition: 'opacity 0.15s ease, transform 0.15s ease',
-            pointerEvents: hovered ? 'auto' : 'none',
-          }}
-        >
-          <p className="text-[10px] font-mono text-slate-500 tracking-widest mb-2.5 flex items-center gap-1">
-            <Sparkles size={9} className="text-yellow-400" /> TOP PULLS
-          </p>
-          <div className="grid grid-cols-4 gap-1.5">
-            {topCards.map(({ card }) => {
-              const color = getRarityColor(card.rarity)
-              return (
-                <div key={card.id} className="flex flex-col gap-1">
-                  <div
-                    className="relative w-full rounded-lg overflow-hidden"
-                    style={{ aspectRatio: '3/4', border: `1px solid ${color}50` }}
-                  >
-                    <div className="absolute top-0 inset-x-0 h-0.5 z-10" style={{ backgroundColor: color }} />
-                    {card.imageUrl ? (
-                      <img src={card.imageUrl} alt={card.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div
-                        className="w-full h-full flex items-center justify-center text-base"
-                        style={{ background: `linear-gradient(135deg, ${color}25 0%, #0a0e1a 100%)` }}
-                      >
-                        {GAME_EMOJI[card.game] ?? '🃏'}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[9px] text-white leading-tight truncate text-center">{card.name}</p>
-                  <p className="text-[9px] font-mono text-center" style={{ color }}>{formatCurrency(card.value)}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
     <Link
       href={`/open/${cardCase.slug}`}
@@ -117,24 +78,115 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
       {/* Image / Visual area */}
       <div className="relative h-48 bg-gradient-to-b from-navy-700 to-navy-900 flex items-center justify-center overflow-hidden">
         {cardCase.imageUrl ? (
-          <Image src={cardCase.imageUrl} alt={cardCase.name} fill className="object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+          <Image
+            src={cardCase.imageUrl}
+            alt={cardCase.name}
+            fill
+            className="object-cover transition-all duration-500"
+            style={{ opacity: hovered && topCards.length > 0 ? 0.15 : 0.7 }}
+          />
         ) : (
-          <CasePlaceholder tier={cardCase.tier} />
+          <div style={{ opacity: hovered && topCards.length > 0 ? 0 : 1, transition: 'opacity 0.3s ease' }}>
+            <CasePlaceholder tier={cardCase.tier} />
+          </div>
+        )}
+
+        {/* Top cards fan overlay */}
+        {topCards.length > 0 && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center z-10"
+            style={{
+              opacity: hovered ? 1 : 0,
+              transition: 'opacity 0.2s ease',
+              background: 'radial-gradient(ellipse at center, rgba(8,13,26,0.7) 0%, rgba(8,13,26,0.95) 100%)',
+              pointerEvents: 'none',
+            }}
+          >
+            <p
+              className="text-[9px] font-mono tracking-[0.25em] mb-3 flex items-center gap-1.5"
+              style={{
+                color: 'rgba(251,191,36,0.8)',
+                opacity: hovered ? 1 : 0,
+                transform: hovered ? 'translateY(0)' : 'translateY(4px)',
+                transition: 'opacity 0.2s ease 0.05s, transform 0.2s ease 0.05s',
+              }}
+            >
+              <Sparkles size={8} />
+              TOP PULLS
+              <Sparkles size={8} />
+            </p>
+
+            <div className="flex items-end gap-1" style={{ paddingBottom: 8 }}>
+              {topCards.slice(0, 4).map(({ card }, i) => {
+                const color = getRarityColor(card.rarity)
+                const slot = FAN_SLOTS[i] ?? FAN_SLOTS[0]
+                const isLegendary = card.rarity === 'LEGENDARY'
+                const isEpic = card.rarity === 'EPIC'
+                return (
+                  <div
+                    key={card.id}
+                    style={{
+                      transform: hovered
+                        ? `rotate(${slot.rotate}deg) translateY(${slot.y}px)`
+                        : `rotate(${slot.rotate}deg) translateY(${slot.y + 18}px) scale(0.8)`,
+                      opacity: hovered ? 1 : 0,
+                      transition: `opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)`,
+                      transitionDelay: hovered ? `${i * 0.06}s` : '0s',
+                      filter: isLegendary
+                        ? `drop-shadow(0 0 8px ${color})`
+                        : isEpic
+                        ? `drop-shadow(0 0 5px ${color})`
+                        : `drop-shadow(0 2px 8px rgba(0,0,0,0.8))`,
+                    }}
+                  >
+                    <div style={{
+                      width: 54,
+                      height: 76,
+                      borderRadius: 7,
+                      overflow: 'hidden',
+                      border: `1.5px solid ${color}80`,
+                      boxShadow: `0 0 14px ${color}50, inset 0 0 0 1px ${color}20`,
+                      position: 'relative',
+                      background: '#080c18',
+                    }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}, ${color}80)`, zIndex: 2 }} />
+                      {card.imageUrl ? (
+                        <img src={card.imageUrl} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{
+                          width: '100%', height: '100%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 20,
+                          background: `linear-gradient(135deg, ${color}25 0%, #080c18 100%)`,
+                        }}>
+                          {GAME_EMOJI[card.game] ?? '🃏'}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ width: 54, marginTop: 4, textAlign: 'center' }}>
+                      <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.75)', lineHeight: 1.3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{card.name}</p>
+                      <p style={{ fontSize: 8, fontFamily: 'var(--font-mono)', color, marginTop: 1 }}>${(card.value / 100).toFixed(0)}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         )}
 
         {/* Tier badge */}
-        <div className={cn('absolute top-3 left-3 rarity-badge', styles.badge)}>
+        <div className={cn('absolute top-3 left-3 rarity-badge z-20', styles.badge)}>
           {getTierLabel(cardCase.tier)}
         </div>
 
         {/* Card count badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 text-xs text-slate-300">
+        <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 text-xs text-slate-300 z-20">
           <Package size={10} />
           {cardCase.cardCount} cards
         </div>
 
         {/* Gradient overlay */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-navy-800 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-navy-800 to-transparent z-[5]" />
       </div>
 
       {/* Content */}

@@ -9,10 +9,18 @@ import { GameCardVisual } from '@/components/game-card-visual'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSetting } from '@/lib/settings'
 
+const TOP_CARDS_INCLUDE = {
+  caseCards: {
+    include: { card: { select: { id: true, name: true, imageUrl: true, rarity: true, value: true, game: true } } },
+    orderBy: { card: { value: 'desc' as const } },
+    take: 4,
+  },
+}
+
 async function getFeaturedCases() {
   return prisma.cardCase.findMany({
     where: { active: true, featured: true },
-    include: { _count: { select: { openings: true } } },
+    include: { _count: { select: { openings: true } }, ...TOP_CARDS_INCLUDE },
     orderBy: { price: 'asc' },
     take: 4,
   })
@@ -21,7 +29,7 @@ async function getFeaturedCases() {
 async function getCasesByGame() {
   return prisma.cardCase.findMany({
     where: { active: true },
-    include: { _count: { select: { openings: true } } },
+    include: { _count: { select: { openings: true } }, ...TOP_CARDS_INCLUDE },
     orderBy: { price: 'asc' },
   })
 }
@@ -169,7 +177,7 @@ export default async function HomePage() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     {gameCases.map(cardCase => (
-                      <CaseCard key={cardCase.id} cardCase={cardCase} />
+                      <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} />
                     ))}
                   </div>
                   <div className="mt-4 text-right">
@@ -198,7 +206,7 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {featuredCases.map(cardCase => (
-              <CaseCard key={cardCase.id} cardCase={cardCase} featured />
+              <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} featured />
             ))}
           </div>
         </section>
