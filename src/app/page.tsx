@@ -69,7 +69,7 @@ export default async function HomePage() {
     <div className="min-h-screen">
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-6 pb-16 px-4">
+      <section className="relative overflow-hidden pt-2 pb-16 px-4">
         {/* Hero background image */}
         {settings.hero_banner && (
           <div className="absolute inset-0 pointer-events-none">
@@ -94,7 +94,7 @@ export default async function HomePage() {
           {/* Logo */}
           <div className="flex justify-center mb-2">
             {settings.logo_header
-              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={400} className="h-[400px] w-auto object-contain" unoptimized />
+              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={280} className="h-[280px] w-auto object-contain" unoptimized />
               : <Logo size="hero" />}
           </div>
 

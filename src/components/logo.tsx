@@ -43,7 +43,7 @@ export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'hero' }) {
     sm:   { text: 'text-2xl',   dice: 22  },
     md:   { text: 'text-3xl',   dice: 28  },
     lg:   { text: 'text-5xl',   dice: 40  },
-    hero: { text: 'text-[10rem]', dice: 140 },
+    hero: { text: 'text-[7rem]', dice: 100 },
   }[size]
 
   return (
