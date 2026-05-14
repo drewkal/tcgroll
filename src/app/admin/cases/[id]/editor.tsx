@@ -332,15 +332,13 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
       {(() => {
         const cardCount = parseInt(String(form.cardCount), 10) || 1
         const price = parseFloat(String(form.price)) || 0
-        const TOKENS_PER_DOLLAR = 100
-        const evTokens = totalDropRate > 0
+        const ev = totalDropRate > 0
           ? caseCards.reduce((sum, cc) => sum + (cc.dropRate / totalDropRate) * cc.card.value, 0) * cardCount
           : 0
-        const ev = evTokens / TOKENS_PER_DOLLAR
         const evRatio = price > 0 ? (ev / price) * 100 : 0
         const houseEdge = 100 - evRatio
         const topContributors = [...caseCards]
-          .map(cc => ({ ...cc, contribution: totalDropRate > 0 ? (cc.dropRate / totalDropRate) * cc.card.value * cardCount / TOKENS_PER_DOLLAR : 0 }))
+          .map(cc => ({ ...cc, contribution: totalDropRate > 0 ? (cc.dropRate / totalDropRate) * cc.card.value * cardCount : 0 }))
           .sort((a, b) => b.contribution - a.contribution)
           .slice(0, 5)
         return (
@@ -355,7 +353,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
               <div className="bg-navy-800 rounded-xl p-4 border border-white/5 text-center">
                 <div className="text-xs font-mono text-slate-400 tracking-wider mb-1">TOTAL EV</div>
                 <div className={`font-display text-2xl font-bold ${ev >= price ? 'text-green-400' : 'text-yellow-400'}`}>
-                  ${ev.toFixed(2)}
+                  {formatCurrency(ev)}
                 </div>
                 <div className="text-xs text-slate-500 mt-1">avg return per open</div>
               </div>
@@ -384,7 +382,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
                       <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: rarityColors[cc.card.rarity] ?? '#9ca3af' }} />
                       <div className="flex-1 text-slate-300 truncate">{cc.card.name}</div>
                       <div className="font-mono text-slate-400">{totalDropRate > 0 ? ((cc.dropRate / totalDropRate) * 100).toFixed(2) : '0.00'}% chance</div>
-                      <div className="font-mono text-yellow-400 w-16 text-right">+${cc.contribution.toFixed(2)}</div>
+                      <div className="font-mono text-yellow-400 w-20 text-right">+{formatCurrency(cc.contribution)}</div>
                     </div>
                   ))}
                 </div>
