@@ -268,7 +268,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
                 .filter(c => !caseCards.find(cc => cc.cardId === c.id))
                 .map(c => (
                   <option key={c.id} value={c.id}>
-                    [{c.rarity}] {c.name} — ${(c.value / 100).toFixed(2)}
+                    [{c.rarity}] {c.name} — {formatCurrency(c.value)}
                   </option>
                 ))
               }
@@ -304,7 +304,7 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-white truncate">{cc.card.name}</div>
-                    <div className="text-xs text-slate-500">${(cc.card.value / 100).toFixed(2)}</div>
+                    <div className="text-xs text-slate-500">{formatCurrency(cc.card.value)}</div>
                   </div>
                   <input
                     type="number"
