@@ -38,11 +38,12 @@ function DiceIcon({ size = 28 }: { size?: number }) {
   )
 }
 
-export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
+export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'hero' }) {
   const config = {
-    sm: { text: 'text-2xl',  dice: 22 },
-    md: { text: 'text-3xl',  dice: 28 },
-    lg: { text: 'text-5xl',  dice: 40 },
+    sm:   { text: 'text-2xl',   dice: 22  },
+    md:   { text: 'text-3xl',   dice: 28  },
+    lg:   { text: 'text-5xl',   dice: 40  },
+    hero: { text: 'text-[10rem]', dice: 140 },
   }[size]
 
   return (

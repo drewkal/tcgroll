@@ -94,8 +94,8 @@ export default async function HomePage() {
           {/* Logo */}
           <div className="flex justify-center mb-6">
             {settings.logo_header
-              ? <Image src={settings.logo_header} alt="TCGRoll" width={320} height={80} className="h-20 w-auto object-contain" unoptimized />
-              : <Logo size="lg" />}
+              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={400} className="h-[400px] w-auto object-contain" unoptimized />
+              : <Logo size="hero" />}
           </div>
 
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-sm font-mono mb-8 animate-bounce-slow">
@@ -104,8 +104,8 @@ export default async function HomePage() {
           </div>
 
           <h1 className="font-display text-7xl md:text-9xl tracking-wider text-white mb-4 leading-none">
-            Chase the{' '}
-            <span className="text-glow-gold text-yellow-400">Grail.</span>
+            CHASE THE{' '}
+            <span className="text-glow-gold text-yellow-400">GRAIL.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
