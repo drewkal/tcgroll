@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react'
+import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink, Settings, Eye, EyeOff, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import Link from 'next/link'
@@ -64,10 +64,63 @@ function ProfilePageInner() {
   const [openings, setOpenings] = useState<Opening[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedOpening, setExpandedOpening] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // Name form
+  const [nameValue, setNameValue] = useState('')
+  const [nameSaving, setNameSaving] = useState(false)
+
+  // Password form
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [pwSaving, setPwSaving] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
+
+  useEffect(() => {
+    if (session?.user?.name) setNameValue(session.user.name)
+  }, [session])
+
+  const saveName = async () => {
+    if (!nameValue.trim()) return
+    setNameSaving(true)
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'name', name: nameValue }),
+      })
+      const data = await res.json()
+      if (!res.ok) { toast.error(data.error); return }
+      toast.success('Name updated')
+    } finally {
+      setNameSaving(false)
+    }
+  }
+
+  const savePassword = async () => {
+    if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return }
+    if (newPassword.length < 8) { toast.error('Password must be at least 8 characters'); return }
+    setPwSaving(true)
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'password', currentPassword, newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) { toast.error(data.error); return }
+      toast.success('Password updated')
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('')
+    } finally {
+      setPwSaving(false)
+    }
+  }
 
   useEffect(() => {
     if (!session) return
@@ -113,6 +166,114 @@ function ProfilePageInner() {
             {formatCurrency(stats?.currentBalance ?? session?.user.balance ?? 0)}
           </div>
         </div>
+      </div>
+
+      {/* Settings */}
+      <div className="glass rounded-2xl border border-white/5 overflow-hidden">
+        <button
+          onClick={() => setSettingsOpen(o => !o)}
+          className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <Settings size={18} className="text-slate-400" />
+            <span className="font-display text-lg text-white tracking-wide">ACCOUNT SETTINGS</span>
+          </div>
+          {settingsOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+        </button>
+
+        {settingsOpen && (
+          <div className="border-t border-white/5 p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            {/* Display name */}
+            <div className="space-y-3">
+              <h3 className="font-mono text-xs text-slate-400 tracking-widest">DISPLAY NAME</h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={nameValue}
+                  onChange={e => setNameValue(e.target.value)}
+                  maxLength={32}
+                  className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+                  placeholder="Your display name"
+                />
+                <button
+                  onClick={saveName}
+                  disabled={nameSaving || !nameValue.trim()}
+                  className="btn-gold px-4 py-2.5 rounded-xl text-sm flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {nameSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Check size={14} />}
+                  Save
+                </button>
+              </div>
+              <p className="text-xs text-slate-500">This is the name shown on your profile.</p>
+            </div>
+
+            {/* Email (read-only) */}
+            <div className="space-y-3">
+              <h3 className="font-mono text-xs text-slate-400 tracking-widest">EMAIL ADDRESS</h3>
+              <input
+                type="email"
+                value={session?.user?.email ?? ''}
+                readOnly
+                className="w-full bg-navy-800/50 border border-white/5 rounded-xl px-4 py-2.5 text-slate-400 text-sm cursor-not-allowed"
+              />
+              <p className="text-xs text-slate-500">Email cannot be changed.</p>
+            </div>
+
+            {/* Change password */}
+            <div className="space-y-3 md:col-span-2">
+              <h3 className="font-mono text-xs text-slate-400 tracking-widest">CHANGE PASSWORD</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="relative">
+                  <input
+                    type={showCurrent ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="Current password"
+                    className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+                  />
+                  <button onClick={() => setShowCurrent(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                    {showCurrent ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showNew ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="New password"
+                    className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+                  />
+                  <button onClick={() => setShowNew(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                    {showNew ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className="w-full bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+                />
+              </div>
+              {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-red-400">Passwords do not match</p>
+              )}
+              {newPassword.length > 0 && newPassword.length < 8 && (
+                <p className="text-xs text-red-400">Password must be at least 8 characters</p>
+              )}
+              <button
+                onClick={savePassword}
+                disabled={pwSaving || !newPassword || newPassword !== confirmPassword || newPassword.length < 8}
+                className="btn-gold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 disabled:opacity-50"
+              >
+                {pwSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> : <Check size={14} />}
+                Update Password
+              </button>
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* Stats grid */}
