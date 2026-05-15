@@ -81,13 +81,13 @@ export default async function HomePage() {
               priority
               unoptimized
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#081a0e]/40 via-[#081a0e]/60 to-[#081a0e]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#080d1a]/40 via-[#080d1a]/60 to-[#080d1a]" />
           </div>
         )}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-yellow-400/5 blur-3xl animate-pulse" />
-          <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-green-500/5 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-1/4 left-1/2 w-80 h-80 rounded-full bg-green-600/4 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-blue-500/5 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-1/4 left-1/2 w-80 h-80 rounded-full bg-purple-500/4 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">

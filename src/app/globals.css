@@ -16,10 +16,10 @@
   --font-body: 'Lato', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
-  --bg-primary: #081a0e;
-  --bg-secondary: #0d2117;
-  --bg-card: #122b1e;
-  --bg-hover: #1a3d2a;
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1629;
+  --bg-card: #151d38;
+  --bg-hover: #1e2a4a;
 
   --accent-gold: #fbbf24;
   --accent-gold-dim: #d97706;
@@ -137,8 +137,8 @@ body {
   background-color: var(--bg-primary);
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(251,191,36,0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(34,197,94,0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(22,163,74,0.04) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(168,85,247,0.03) 0%, transparent 50%);
 }
 
 /* Opening animation particles */
@@ -159,7 +159,7 @@ body {
 
 /* Glass card effect */
 .glass {
-  background: rgba(10, 28, 18, 0.7);
+  background: rgba(15, 22, 41, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.06);
