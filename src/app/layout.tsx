@@ -10,6 +10,7 @@ import { getSettings } from '@/lib/settings'
 import Script from 'next/script'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://tcgroll.com'),
   title: {
     default: 'TCGRoll — Open Virtual TCG Cases Online',
     template: '%s | TCGRoll',

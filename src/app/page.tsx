@@ -1,5 +1,9 @@
 // src/app/page.tsx
 export const dynamic = 'force-dynamic'
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
+  alternates: { canonical: 'https://tcgroll.com/' },
+}
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
