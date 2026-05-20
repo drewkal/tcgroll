@@ -111,7 +111,11 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
         }),
       })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error || 'Failed to save case'); return }
+      if (!res.ok) {
+        console.error('Case save failed:', res.status, data)
+        toast.error(data.error || `Failed to save case (${res.status})`)
+        return
+      }
       toast.success(isNew ? 'Case created!' : 'Case updated!')
       router.push('/admin')
     } finally {
@@ -148,6 +152,10 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const val = e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value
     setForm(prev => ({ ...prev, [k]: val }))
+    if (k === 'game') {
+      setCardGameFilter(val as string)
+      setSelectedCardId('')
+    }
   }
 
   const rarityColors: Record<string, string> = {
