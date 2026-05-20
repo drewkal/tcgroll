@@ -317,19 +317,19 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
               />
             </div>
 
+            <select
+              value={selectedCardId}
+              onChange={e => setSelectedCardId(e.target.value)}
+              className="w-full bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+            >
+              <option value="">Select card ({filteredCards.length} available)...</option>
+              {filteredCards.map(c => (
+                <option key={c.id} value={c.id}>
+                  [{c.rarity}] {c.name}{c.setName ? ` (${c.setName})` : ''} — {formatCurrency(c.value)}
+                </option>
+              ))}
+            </select>
             <div className="flex gap-2">
-              <select
-                value={selectedCardId}
-                onChange={e => setSelectedCardId(e.target.value)}
-                className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400/50"
-              >
-                <option value="">Select card ({filteredCards.length} available)...</option>
-                {filteredCards.map(c => (
-                  <option key={c.id} value={c.id}>
-                    [{c.rarity}] {c.name}{c.setName ? ` (${c.setName})` : ''} — {formatCurrency(c.value)}
-                  </option>
-                ))}
-              </select>
               <input
                 type="number"
                 step="0.1"
@@ -337,11 +337,11 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
                 max="100"
                 value={newDropRate}
                 onChange={e => setNewDropRate(parseFloat(e.target.value))}
-                className="w-20 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none"
-                placeholder="%"
+                className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none"
+                placeholder="Drop rate %"
               />
-              <button onClick={addCard} className="btn-gold px-3 py-2 rounded-xl text-sm">
-                <Plus size={16} />
+              <button onClick={addCard} className="btn-gold px-4 py-2 rounded-xl text-sm flex items-center gap-1.5">
+                <Plus size={16} /> Add
               </button>
             </div>
           </div>
