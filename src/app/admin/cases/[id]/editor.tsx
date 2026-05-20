@@ -1,10 +1,10 @@
 // src/app/admin/cases/[id]/editor.tsx
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
-import { Save, Trash2, ChevronLeft, Plus, X, TrendingUp } from 'lucide-react'
+import { Save, Trash2, ChevronLeft, Plus, X, TrendingUp, Search } from 'lucide-react'
 import Link from 'next/link'
 import { ImageUpload } from '@/components/image-upload'
 
@@ -13,6 +13,8 @@ interface Card {
   name: string
   rarity: string
   value: number
+  game: string
+  setName?: string | null
   pokemonType: string
 }
 
@@ -72,6 +74,19 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
   )
   const [selectedCardId, setSelectedCardId] = useState('')
   const [newDropRate, setNewDropRate] = useState(5)
+  const [cardSearch, setCardSearch] = useState('')
+  const [cardGameFilter, setCardGameFilter] = useState<string>(form.game)
+  const [cardRarityFilter, setCardRarityFilter] = useState<string>('ALL')
+
+  const filteredCards = useMemo(() => {
+    return allCards.filter(c => {
+      if (caseCards.find(cc => cc.cardId === c.id)) return false
+      if (cardGameFilter !== 'ALL' && c.game !== cardGameFilter) return false
+      if (cardRarityFilter !== 'ALL' && c.rarity !== cardRarityFilter) return false
+      if (cardSearch && !c.name.toLowerCase().includes(cardSearch.toLowerCase())) return false
+      return true
+    })
+  }, [allCards, caseCards, cardGameFilter, cardRarityFilter, cardSearch])
 
   const totalDropRate = caseCards.reduce((s, cc) => s + cc.dropRate, 0)
 
@@ -256,39 +271,79 @@ export function AdminCaseEditor({ cardCase, allCards, isNew }: Props) {
             </div>
           </div>
 
-          {/* Add card */}
-          <div className="flex gap-2">
-            <select
-              value={selectedCardId}
-              onChange={e => setSelectedCardId(e.target.value)}
-              className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400/50"
-            >
-              <option value="">Select card...</option>
-              {allCards
-                .filter(c => !caseCards.find(cc => cc.cardId === c.id))
-                .map(c => (
+          {/* Card picker filters */}
+          <div className="space-y-2">
+            {/* Game filter tabs */}
+            <div className="flex gap-1 flex-wrap">
+              {[
+                { value: 'ALL', label: 'All' },
+                { value: 'POKEMON', label: 'Pokémon' },
+                { value: 'ONE_PIECE', label: 'One Piece' },
+                { value: 'MAGIC', label: 'Magic' },
+                { value: 'DRAGON_BALL', label: 'Dragon Ball' },
+              ].map(g => (
+                <button
+                  key={g.value}
+                  onClick={() => { setCardGameFilter(g.value); setSelectedCardId('') }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${cardGameFilter === g.value ? 'bg-yellow-400 text-black' : 'bg-navy-800 text-slate-400 hover:text-white border border-white/10'}`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Rarity filter */}
+            <div className="flex gap-1 flex-wrap">
+              {['ALL', 'LEGENDARY', 'EPIC', 'RARE', 'UNCOMMON', 'COMMON'].map(r => (
+                <button
+                  key={r}
+                  onClick={() => { setCardRarityFilter(r); setSelectedCardId('') }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${cardRarityFilter === r ? 'bg-yellow-400 text-black' : 'bg-navy-800 border border-white/10'}`}
+                  style={cardRarityFilter !== r ? { color: rarityColors[r] ?? '#9ca3af' } : {}}
+                >
+                  {r === 'ALL' ? 'All' : r.charAt(0) + r.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Search + select + add */}
+            <div className="relative">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                value={cardSearch}
+                onChange={e => { setCardSearch(e.target.value); setSelectedCardId('') }}
+                placeholder="Search cards..."
+                className="w-full bg-navy-800 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <select
+                value={selectedCardId}
+                onChange={e => setSelectedCardId(e.target.value)}
+                className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-yellow-400/50"
+              >
+                <option value="">Select card ({filteredCards.length} available)...</option>
+                {filteredCards.map(c => (
                   <option key={c.id} value={c.id}>
-                    [{c.rarity}] {c.name} — {formatCurrency(c.value)}
+                    [{c.rarity}] {c.name}{c.setName ? ` (${c.setName})` : ''} — {formatCurrency(c.value)}
                   </option>
-                ))
-              }
-            </select>
-            <input
-              type="number"
-              step="0.1"
-              min="0.1"
-              max="100"
-              value={newDropRate}
-              onChange={e => setNewDropRate(parseFloat(e.target.value))}
-              className="w-20 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none"
-              placeholder="%"
-            />
-            <button
-              onClick={addCard}
-              className="btn-gold px-3 py-2 rounded-xl text-sm"
-            >
-              <Plus size={16} />
-            </button>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                max="100"
+                value={newDropRate}
+                onChange={e => setNewDropRate(parseFloat(e.target.value))}
+                className="w-20 bg-navy-800 border border-white/10 rounded-xl px-3 py-2 text-white text-sm focus:outline-none"
+                placeholder="%"
+              />
+              <button onClick={addCard} className="btn-gold px-3 py-2 rounded-xl text-sm">
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Cards list */}
