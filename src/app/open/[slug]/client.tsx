@@ -309,6 +309,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
   const [selectedToSell, setSelectedToSell] = useState<Set<number>>(new Set())
   const [isSelling,      setIsSelling]      = useState(false)
+  const [revealingCard,  setRevealingCard]  = useState<Card | null>(null)
 
   const balance   = currentBalance ?? session?.user?.balance ?? 0
   const canAfford = balance >= cardCase.price
@@ -344,14 +345,20 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   }, [phase, session, canAfford, cardCase.id, router])
 
   const handleSpinComplete = useCallback(() => {
-    setRevealedCards(prev => [...prev, winningCards[spinIndex]])
-    const next = spinIndex + 1
-    if (next >= winningCards.length) {
-      setTimeout(() => setPhase('done'), 150)
-    } else {
-      setSpinIndex(next)
-    }
-  }, [spinIndex, winningCards, updateSession])
+    const card = winningCards[spinIndex]
+    setRevealingCard(card)
+    const revealMs = (card.rarity === 'LEGENDARY' || card.rarity === 'EPIC') ? 3000 : 2000
+    setTimeout(() => {
+      setRevealingCard(null)
+      setRevealedCards(prev => [...prev, card])
+      const next = spinIndex + 1
+      if (next >= winningCards.length) {
+        setTimeout(() => setPhase('done'), 150)
+      } else {
+        setSpinIndex(next)
+      }
+    }, revealMs)
+  }, [spinIndex, winningCards])
 
   const toggleSell = useCallback((idx: number) => {
     setSelectedToSell(prev => {
@@ -565,24 +572,53 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                 </div>
               </div>
 
-              {/* Reel */}
-              <div className="glass rounded-2xl border border-yellow-400/20 p-4 overflow-hidden">
-                <SpinReel
-                  key={spinIndex}
-                  caseCards={cardCase.caseCards}
-                  winner={winningCards[spinIndex]}
-                  onComplete={handleSpinComplete}
-                />
-              </div>
+              {/* Big card reveal OR reel */}
+              {revealingCard ? (
+                <>
+                  {(revealingCard.rarity === 'LEGENDARY' || revealingCard.rarity === 'EPIC') && (
+                    <Celebration rarity={revealingCard.rarity} />
+                  )}
+                  <div
+                    className="glass rounded-2xl border flex flex-col items-center justify-center py-10 gap-5 animate-card-reveal"
+                    style={{
+                      borderColor: getRarityColor(revealingCard.rarity) + '60',
+                      background: `radial-gradient(ellipse at center, ${getRarityColor(revealingCard.rarity)}12 0%, transparent 70%)`,
+                    }}
+                  >
+                    <CardDisplay card={revealingCard} size="xl" />
+                    <div className="text-center">
+                      <div
+                        className="font-display text-3xl tracking-widest"
+                        style={{ color: getRarityColor(revealingCard.rarity), textShadow: `0 0 20px ${getRarityColor(revealingCard.rarity)}` }}
+                      >
+                        {revealingCard.rarity === 'LEGENDARY' ? '🏆 LEGENDARY!' :
+                         revealingCard.rarity === 'EPIC'      ? '✨ EPIC PULL!'  :
+                         revealingCard.rarity === 'RARE'      ? '⭐ RARE PULL'   :
+                         revealingCard.name}
+                      </div>
+                      <div className="font-mono text-xl text-yellow-400 mt-1">{formatCurrency(revealingCard.value)}</div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="glass rounded-2xl border border-yellow-400/20 p-4 overflow-hidden">
+                  <SpinReel
+                    key={spinIndex}
+                    caseCards={cardCase.caseCards}
+                    winner={winningCards[spinIndex]}
+                    onComplete={handleSpinComplete}
+                  />
+                </div>
+              )}
 
               {/* Previously revealed cards */}
               {revealedCards.length > 0 && (
                 <div>
                   <p className="text-xs font-mono text-slate-500 tracking-widest mb-3">REVEALED SO FAR</p>
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {revealedCards.map((card, i) => (
                       <div key={i} className="opacity-80">
-                        <CardDisplay card={card} size="sm" />
+                        <CardDisplay card={card} size="md" />
                       </div>
                     ))}
                   </div>
@@ -612,7 +648,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
               )}
 
               {/* Cards grid */}
-              <div className="grid grid-cols-5 gap-3">
+              <div className={cn('grid gap-3', revealedCards.length <= 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3 sm:grid-cols-5')}>
                 {revealedCards.map((card, i) => (
                   <div
                     key={`${card.id}-${i}`}
@@ -622,7 +658,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                       selectedToSell.has(i) ? 'ring-2 ring-red-400 opacity-60' : 'hover:scale-105',
                     )}
                   >
-                    <CardDisplay card={card} size="sm" />
+                    <CardDisplay card={card} size={revealedCards.length <= 4 ? 'lg' : 'md'} />
                     {selectedToSell.has(i) && (
                       <div className="text-center text-xs font-mono text-red-400 mt-1">SELL</div>
                     )}

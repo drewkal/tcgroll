@@ -10,7 +10,7 @@ import { CardDetailModal } from './card-detail-modal'
 
 interface CardDisplayProps {
   card: Card & { game?: string }
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   selected?: boolean
   onSelect?: () => void
   showSell?: boolean
@@ -20,6 +20,7 @@ const sizeMap = {
   sm: { card: 'w-28 h-40', name: 'text-xs', value: 'text-xs' },
   md: { card: 'w-36 h-52', name: 'text-sm', value: 'text-sm' },
   lg: { card: 'w-48 h-64', name: 'text-base', value: 'text-base' },
+  xl: { card: 'w-56 h-80', name: 'text-lg', value: 'text-base' },
 }
 
 const rarityBg: Record<string, string> = {
