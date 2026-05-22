@@ -310,6 +310,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const [selectedToSell, setSelectedToSell] = useState<Set<number>>(new Set())
   const [isSelling,      setIsSelling]      = useState(false)
   const [revealingCard,  setRevealingCard]  = useState<Card | null>(null)
+  const [revealExiting,  setRevealExiting]  = useState(false)
 
   const balance   = currentBalance ?? session?.user?.balance ?? 0
   const canAfford = balance >= cardCase.price
@@ -347,16 +348,22 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const handleSpinComplete = useCallback(() => {
     const card = winningCards[spinIndex]
     setRevealingCard(card)
+    setRevealExiting(false)
     const revealMs = (card.rarity === 'LEGENDARY' || card.rarity === 'EPIC') ? 3000 : 2000
     setTimeout(() => {
-      setRevealingCard(null)
-      setRevealedCards(prev => [...prev, card])
-      const next = spinIndex + 1
-      if (next >= winningCards.length) {
-        setTimeout(() => setPhase('done'), 150)
-      } else {
-        setSpinIndex(next)
-      }
+      // Fade out the reveal card first
+      setRevealExiting(true)
+      setTimeout(() => {
+        setRevealingCard(null)
+        setRevealExiting(false)
+        setRevealedCards(prev => [...prev, card])
+        const next = spinIndex + 1
+        if (next >= winningCards.length) {
+          setTimeout(() => setPhase('done'), 150)
+        } else {
+          setSpinIndex(next)
+        }
+      }, 350)
     }, revealMs)
   }, [spinIndex, winningCards])
 
@@ -583,6 +590,9 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                     style={{
                       borderColor: getRarityColor(revealingCard.rarity) + '60',
                       background: `radial-gradient(ellipse at center, ${getRarityColor(revealingCard.rarity)}12 0%, transparent 70%)`,
+                      transition: 'opacity 0.35s ease-out, transform 0.35s ease-out',
+                      opacity: revealExiting ? 0 : 1,
+                      transform: revealExiting ? 'scale(0.94) translateY(16px)' : 'scale(1) translateY(0)',
                     }}
                   >
                     <CardDisplay card={revealingCard} size="xl" />
@@ -601,7 +611,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                   </div>
                 </>
               ) : (
-                <div className="glass rounded-2xl border border-yellow-400/20 p-4 overflow-hidden">
+                <div className="glass rounded-2xl border border-yellow-400/20 p-4 overflow-hidden animate-fade-in">
                   <SpinReel
                     key={spinIndex}
                     caseCards={cardCase.caseCards}
@@ -629,7 +639,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
 
           {/* Done */}
           {phase === 'done' && revealedCards.length > 0 && (
-            <>
+            <div className="animate-fade-in space-y-6">
               {/* Best pull banner */}
               {bestCard && (bestCard.rarity === 'LEGENDARY' || bestCard.rarity === 'EPIC') && (
                 <div className={cn(
@@ -722,7 +732,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                   </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
