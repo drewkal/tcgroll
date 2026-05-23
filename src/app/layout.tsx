@@ -42,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-9922Z4W1VB');
+          gtag('config', 'AW-737826355');
         `}</Script>
       </head>
       <body className="mesh-bg min-h-screen">
