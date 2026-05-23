@@ -18,9 +18,11 @@ function DepositContent() {
   useEffect(() => {
     if (searchParams.get('success') === '1') {
       toast.success('Tokens added to your balance!')
-      update() // refresh session balance
+      update()
+      router.replace('/deposit')
     }
-  }, [searchParams, update])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleBuy(packageId: string) {
     if (!session) { router.push('/login'); return }
