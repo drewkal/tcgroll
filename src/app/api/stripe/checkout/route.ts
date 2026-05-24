@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         tokens: String(pkg.tokens),
         packageId: pkg.id,
       },
-      success_url: `${baseUrl}/deposit?success=1`,
+      success_url: `${baseUrl}/deposit?success=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/deposit`,
     })
 

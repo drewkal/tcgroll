@@ -20,6 +20,13 @@ function DepositContent() {
       toast.success('Tokens added to your balance!')
       update()
       router.replace('/deposit')
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        ;(window as any).gtag('event', 'conversion', {
+          send_to: 'AW-737826355/T-G8CPiuorIcELOs6d8C',
+          currency: 'USD',
+          transaction_id: searchParams.get('session_id') ?? '',
+        })
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
