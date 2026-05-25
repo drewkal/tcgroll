@@ -26,7 +26,7 @@ async function getCase(slug: string) {
     include: {
       caseCards: {
         include: { card: true },
-        orderBy: { dropRate: 'desc' },
+        orderBy: { card: { value: 'desc' } },
       },
       _count: { select: { openings: true } },
     },
