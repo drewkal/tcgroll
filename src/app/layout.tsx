@@ -44,6 +44,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           gtag('config', 'G-9922Z4W1VB');
           gtag('config', 'AW-737826355');
         `}</Script>
+        <Script id="reddit-pixel" strategy="afterInteractive">{`
+          !function(w,d){if(!w.rdt){var p=w.rdt=function(){p.sendEvent?p.sendEvent.apply(p,arguments):p.callQueue.push(arguments)};p.callQueue=[];var t=d.createElement("script");t.src="https://www.redditstatic.com/ads/pixel.js?pixel_id=t2_nljwlgd",t.async=!0;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(t,s)}}(window,document);rdt('init','t2_nljwlgd');rdt('track','PageVisit');
+        `}</Script>
       </head>
       <body className="mesh-bg min-h-screen">
         <Providers>
