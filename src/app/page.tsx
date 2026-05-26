@@ -118,13 +118,13 @@ export default async function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/cases" className="btn-gold px-8 py-4 rounded-xl text-lg font-display tracking-widest flex items-center gap-2 group">
-              Browse Cases
-              <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link href="/register" className="px-8 py-4 rounded-xl text-lg font-display tracking-widest border border-white/10 text-white hover:bg-white/5 hover:border-white/20 transition-all flex items-center gap-2">
+            <Link href="/register" className="relative btn-gold px-10 py-4 rounded-xl text-lg font-display tracking-widest flex items-center gap-2 shadow-gold-glow animate-glow-pulse">
+              <Zap size={18} className="fill-black" />
               Start Free — 🪙 500 Bonus
-              <Zap size={16} className="text-yellow-400" />
+            </Link>
+            <Link href="/cases" className="px-8 py-4 rounded-xl text-lg font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center gap-2 group">
+              Browse Cases
+              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform text-slate-400" />
             </Link>
           </div>
 
