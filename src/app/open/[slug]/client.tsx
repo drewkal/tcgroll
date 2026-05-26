@@ -422,7 +422,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         {/* ── Left panel ─────────────────────────────── */}
-        <div className="lg:col-span-1 space-y-5">
+        <div className="lg:col-span-1 space-y-5 order-2 lg:order-1">
           <div className="glass rounded-2xl border border-white/5 p-6">
             <div className="text-xs font-mono text-yellow-400 tracking-widest mb-2">{getTierLabel(cardCase.tier)} CASE</div>
             <h1 className="font-display text-4xl tracking-wide text-white mb-2">{cardCase.name}</h1>
@@ -515,7 +515,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
         </div>
 
         {/* ── Right panel ────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 order-1 lg:order-2">
 
           {/* Idle — show all cards in the case */}
           {phase === 'idle' && (

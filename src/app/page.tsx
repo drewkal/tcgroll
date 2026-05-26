@@ -98,45 +98,45 @@ export default async function HomePage() {
           {/* Logo */}
           <div className="flex justify-center mb-2">
             {settings.logo_header
-              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={280} className="h-[280px] w-auto object-contain" unoptimized />
+              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={280} className="h-[160px] sm:h-[220px] md:h-[280px] w-auto object-contain" unoptimized />
               : <Logo size="hero" />}
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-sm font-mono mb-3 animate-bounce-slow">
-            <Zap size={14} className="fill-yellow-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs sm:text-sm font-mono mb-3 animate-bounce-slow">
+            <Zap size={12} className="fill-yellow-400" />
             Pokémon · One Piece · Magic · Dragon Ball
           </div>
 
-          <h1 className="font-display text-7xl md:text-9xl tracking-wider text-white mb-3 leading-none">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-9xl tracking-wider text-white mb-3 leading-none">
             CHASE THE{' '}
             <span className="text-glow-gold text-yellow-400">GRAIL.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-6 font-light leading-relaxed px-2">
             Roll virtual TCG cases with real rarity odds. Pull legendary holos,
             build your dream collection, and sell duplicates for balance.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/register" className="relative btn-gold px-10 py-4 rounded-xl text-lg font-display tracking-widest flex items-center gap-2 shadow-gold-glow animate-glow-pulse">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Link href="/register" className="w-full sm:w-auto relative btn-gold px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
               <Zap size={18} className="fill-black" />
               Start Free — 🪙 500 Bonus
             </Link>
-            <Link href="/cases" className="px-8 py-4 rounded-xl text-lg font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center gap-2 group">
+            <Link href="/cases" className="w-full sm:w-auto px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
               Browse Cases
               <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform text-slate-400" />
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-12 mt-8">
+          <div className="flex items-center justify-center gap-8 sm:gap-12 mt-6 sm:mt-8">
             {[
               { label: 'Cases Opened', value: stats.totalOpenings.toLocaleString() },
               { label: 'Trainers', value: stats.totalUsers.toLocaleString() },
               { label: 'Card Games', value: '4' },
             ].map(({ label, value }) => (
               <div key={label} className="text-center">
-                <div className="font-display text-3xl md:text-4xl text-yellow-400 text-glow-gold">{value}</div>
-                <div className="text-xs text-slate-500 font-mono uppercase tracking-widest mt-1">{label}</div>
+                <div className="font-display text-2xl sm:text-3xl md:text-4xl text-yellow-400 text-glow-gold">{value}</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 font-mono uppercase tracking-widest mt-1">{label}</div>
               </div>
             ))}
           </div>
@@ -144,10 +144,10 @@ export default async function HomePage() {
       </section>
 
       {/* Game Sections */}
-      <section className="px-4 py-20 max-w-7xl mx-auto space-y-16">
+      <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto space-y-12 md:space-y-16">
         <div>
           <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— BROWSE BY GAME</p>
-          <h2 className="font-display text-5xl tracking-wide text-white">CHOOSE YOUR GAME</h2>
+          <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white">CHOOSE YOUR GAME</h2>
         </div>
 
         {GAME_SLUGS.map(slug => {
@@ -162,13 +162,13 @@ export default async function HomePage() {
               </div>
 
               {/* Game header */}
-              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-8 pt-24 pb-6 mb-6 flex items-center justify-between`}>
+              <div className={`relative rounded-2xl bg-gradient-to-br ${game.bg} border ${game.border} px-5 md:px-8 pt-20 md:pt-24 pb-5 md:pb-6 mb-6 flex items-center justify-between`}>
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-2xl">{game.emoji}</span>
-                    <h3 className="font-display text-3xl text-white tracking-wide">{game.label.toUpperCase()}</h3>
+                    <span className="text-xl md:text-2xl">{game.emoji}</span>
+                    <h3 className="font-display text-2xl md:text-3xl text-white tracking-wide">{game.label.toUpperCase()}</h3>
                   </div>
-                  <p className="text-slate-400 text-sm max-w-md">{game.description}</p>
+                  <p className="text-slate-400 text-xs md:text-sm max-w-md">{game.description}</p>
                 </div>
                 <Link
                   href={`/cases/${slug}`}
@@ -206,11 +206,11 @@ export default async function HomePage() {
 
       {/* Featured Cases */}
       {featuredCases.length > 0 && (
-        <section className="px-4 py-20 max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-10">
+        <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-8 md:mb-10">
             <div>
               <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— FEATURED</p>
-              <h2 className="font-display text-5xl tracking-wide text-white">FEATURED CASES</h2>
+              <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white">FEATURED CASES</h2>
             </div>
             <Link href="/cases" className="text-slate-400 hover:text-yellow-400 transition-colors flex items-center gap-1 text-sm font-mono">
               View All <ChevronRight size={14} />
@@ -225,11 +225,11 @@ export default async function HomePage() {
       )}
 
       {/* How It Works */}
-      <section className="px-4 py-20">
+      <section className="px-4 py-12 md:py-20">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 md:mb-16">
             <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— SIMPLE AS</p>
-            <h2 className="font-display text-5xl tracking-wide text-white">HOW IT WORKS</h2>
+            <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white">HOW IT WORKS</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -249,12 +249,12 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Banner */}
-      <section className="px-4 py-20">
-        <div className="max-w-3xl mx-auto text-center glass rounded-3xl border border-yellow-400/20 p-16 relative overflow-hidden">
+      <section className="px-4 py-12 md:py-20">
+        <div className="max-w-3xl mx-auto text-center glass rounded-3xl border border-yellow-400/20 p-8 md:p-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-radial from-yellow-400/5 to-transparent" />
           <div className="relative">
-            <Shield size={48} className="text-yellow-400 mx-auto mb-6" />
-            <h2 className="font-display text-5xl tracking-wide text-white mb-4">READY TO ROLL?</h2>
+            <Shield size={40} className="text-yellow-400 mx-auto mb-4 md:mb-6 md:w-12 md:h-12" />
+            <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white mb-3 md:mb-4">READY TO ROLL?</h2>
             <p className="text-slate-400 mb-8">Create a free account and get 🪙 500 bonus tokens to start opening cases immediately.</p>
             <Link href="/register" className="btn-gold inline-flex items-center gap-2 px-10 py-4 rounded-xl font-display tracking-widest text-lg">
               Create Free Account
