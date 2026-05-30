@@ -13,6 +13,7 @@ import { GameCardVisual } from '@/components/game-card-visual'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSettings } from '@/lib/settings'
 import { Logo } from '@/components/logo'
+import { RecentPullsTicker, type TickerPull } from '@/components/recent-pulls-ticker'
 
 const TOP_CARDS_INCLUDE = {
   caseCards: {
@@ -52,6 +53,31 @@ async function getGameCards() {
   return Object.fromEntries(games.map((g, i) => [g, results[i]])) as Record<string, { id: string; name: string; imageUrl: string | null; rarity: string; game: string }[]>
 }
 
+async function getRecentPulls(): Promise<TickerPull[]> {
+  const rows = await prisma.openingCard.findMany({
+    include: {
+      card: { select: { name: true, rarity: true } },
+      opening: {
+        select: {
+          case: { select: { name: true } },
+          user: { select: { name: true } },
+        },
+      },
+    },
+    orderBy: { opening: { createdAt: 'desc' } },
+    take: 30,
+  })
+  return rows
+    .filter(r => r.opening.user.name)
+    .map(r => ({
+      id: r.id,
+      user: r.opening.user.name!.split(' ')[0],
+      card: r.card.name,
+      rarity: r.card.rarity,
+      caseName: r.opening.case.name,
+    }))
+}
+
 async function getSiteStats() {
   const [totalOpenings, totalUsers] = await Promise.all([
     prisma.caseOpening.count(),
@@ -61,12 +87,13 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, gameCards, settings] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, settings, recentPulls] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getGameCards(),
     getSettings(['hero_banner', 'logo_header']),
+    getRecentPulls(),
   ])
 
   return (
@@ -142,6 +169,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <RecentPullsTicker pulls={recentPulls} />
 
       {/* Game Sections */}
       <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto space-y-12 md:space-y-16">
