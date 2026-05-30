@@ -56,7 +56,7 @@ async function getGameCards() {
 async function getRecentPulls(): Promise<TickerPull[]> {
   const rows = await prisma.openingCard.findMany({
     include: {
-      card: { select: { name: true, rarity: true } },
+      card: { select: { name: true, rarity: true, imageUrl: true } },
       opening: {
         select: {
           case: { select: { name: true } },
@@ -75,6 +75,7 @@ async function getRecentPulls(): Promise<TickerPull[]> {
       card: r.card.name,
       rarity: r.card.rarity,
       caseName: r.opening.case.name,
+      imageUrl: r.card.imageUrl,
     }))
 }
 
@@ -98,6 +99,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+
+      <RecentPullsTicker pulls={recentPulls} />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-2 pb-16 px-4">
@@ -169,8 +172,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <RecentPullsTicker pulls={recentPulls} />
 
       {/* Game Sections */}
       <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto space-y-12 md:space-y-16">
