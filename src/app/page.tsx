@@ -143,10 +143,23 @@ export default async function HomePage() {
             <span className="text-glow-gold text-yellow-400">GRAIL.</span>
           </h1>
 
-          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-6 font-light leading-relaxed px-2">
+          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-5 font-light leading-relaxed px-2">
             Roll virtual TCG cases with real rarity odds. Pull legendary holos,
             build your dream collection, and sell duplicates for balance.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-6 px-2">
+            {[
+              { icon: '📦', text: 'Physical cards shipped to you' },
+              { icon: '🎯', text: 'Published drop rates' },
+              { icon: '⚡', text: 'Instant digital reveal' },
+            ].map(({ icon, text }) => (
+              <div key={text} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs sm:text-sm font-mono">
+                <span>{icon}</span>
+                {text}
+              </div>
+            ))}
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link href="/register" className="w-full sm:w-auto relative btn-gold px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
