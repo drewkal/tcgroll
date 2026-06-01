@@ -64,6 +64,7 @@ async function getRecentPulls(): Promise<TickerPull[]> {
         },
       },
     },
+    where: { card: { rarity: { in: ['EPIC', 'LEGENDARY'] } } },
     orderBy: { opening: { createdAt: 'desc' } },
     take: 30,
   })

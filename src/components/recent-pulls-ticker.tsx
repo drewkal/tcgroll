@@ -16,16 +16,13 @@ const SEED: TickerPull[] = [
   { id: 's3',  user: 'DeckWizard',   card: 'Black Lotus',             rarity: 'LEGENDARY', caseName: 'Vintage Magic',  imageUrl: null },
   { id: 's4',  user: 'SSGoku',       card: 'Ultra Instinct Goku',     rarity: 'LEGENDARY', caseName: 'DB Heroes',      imageUrl: null },
   { id: 's5',  user: 'PikaPro',      card: 'Pikachu VMAX',            rarity: 'EPIC',      caseName: 'Crown Zenith',   imageUrl: null },
-  { id: 's6',  user: 'CardShark',    card: 'Nami',                    rarity: 'RARE',      caseName: 'OP-09 Pack',     imageUrl: null },
-  { id: 's7',  user: 'SpellCaster',  card: 'Jace, Mind Sculptor',     rarity: 'EPIC',      caseName: 'Modern Masters', imageUrl: null },
-  { id: 's8',  user: 'Vegetto42',    card: 'Super Saiyan Vegeta',     rarity: 'RARE',      caseName: 'BT25 Case',      imageUrl: null },
-  { id: 's9',  user: 'PokeHunter',   card: 'Mewtwo ex',               rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
-  { id: 's10', user: 'ZoroMain',     card: 'Roronoa Zoro',            rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
-  { id: 's11', user: 'AceTrainer',   card: 'Umbreon VMAX',            rarity: 'EPIC',      caseName: 'Crown Zenith',   imageUrl: null },
-  { id: 's12', user: 'DarkKnight',   card: 'Liliana of the Veil',     rarity: 'RARE',      caseName: 'Modern Masters', imageUrl: null },
-  { id: 's13', user: 'SaiyaGod',     card: 'Gogeta Blue',             rarity: 'LEGENDARY', caseName: 'BT25 Case',      imageUrl: null },
-  { id: 's14', user: 'ReelMaster',   card: 'Rayquaza VMAX',           rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
-  { id: 's15', user: 'SnapperX',     card: 'Boa Hancock',             rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
+  { id: 's6',  user: 'SpellCaster',  card: 'Jace, Mind Sculptor',     rarity: 'EPIC',      caseName: 'Modern Masters', imageUrl: null },
+  { id: 's7',  user: 'PokeHunter',   card: 'Mewtwo ex',               rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
+  { id: 's8',  user: 'ZoroMain',     card: 'Roronoa Zoro',            rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
+  { id: 's9',  user: 'AceTrainer',   card: 'Umbreon VMAX',            rarity: 'EPIC',      caseName: 'Crown Zenith',   imageUrl: null },
+  { id: 's10', user: 'SaiyaGod',     card: 'Gogeta Blue',             rarity: 'LEGENDARY', caseName: 'BT25 Case',      imageUrl: null },
+  { id: 's11', user: 'ReelMaster',   card: 'Rayquaza VMAX',           rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
+  { id: 's12', user: 'SnapperX',     card: 'Boa Hancock',             rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
 ]
 
 export function RecentPullsTicker({ pulls }: { pulls: TickerPull[] }) {
