@@ -36,6 +36,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className="noise">
       <head>
+        <Script id="gtm-head" strategy="afterInteractive">{`
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-WLWNW75J');
+        `}</Script>
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-9922Z4W1VB" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];
@@ -46,6 +53,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         `}</Script>
       </head>
       <body className="mesh-bg min-h-screen">
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WLWNW75J"
+            height="0" width="0" style={{ display: 'none', visibility: 'hidden' }} />
+        </noscript>
         <Providers>
           <Navbar logoUrl={logos.logo_header || null} />
           <main className="min-h-screen">{children}</main>
