@@ -9,7 +9,7 @@ import { Card } from '@prisma/client'
 import { CardDisplay } from '@/components/cards/card-display'
 import { formatCurrency, getRarityLabel, getTierLabel } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { Package, ChevronLeft, Zap, RotateCcw, Info, DollarSign } from 'lucide-react'
+import { Package, ChevronLeft, Zap, RotateCcw, Info, DollarSign, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 function fmtRate(rate: number): string {
@@ -406,6 +406,20 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
     return order.indexOf(card.rarity) > order.indexOf(best.rarity) ? card : best
   }, null)
 
+  const handleShare = useCallback(async () => {
+    const url = `https://tcgroll.com/open/${cardCase.slug}?utm_source=share&utm_medium=social&utm_campaign=pull_share`
+    const pullLabel = bestCard
+      ? `I just pulled ${bestCard.name}${bestCard.rarity === 'LEGENDARY' ? ' 🏆' : bestCard.rarity === 'EPIC' ? ' ✨' : ''} from the ${cardCase.name} case on TCGRoll!`
+      : `I just opened the ${cardCase.name} case on TCGRoll!`
+    const text = `${pullLabel}\n\nOpen your own case 🎴`
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: 'TCGRoll Pull', text, url }) } catch {}
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${url}`)
+      toast.success('Copied to clipboard!')
+    }
+  }, [cardCase.slug, cardCase.name, bestCard])
+
   const rarityRates = cardCase.caseCards.reduce<Record<string, number>>((acc, cc) => {
     acc[cc.card.rarity] = (acc[cc.card.rarity] ?? 0) + cc.dropRate
     return acc
@@ -716,6 +730,13 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                       Sell {selectedToSell.size} selected
                     </button>
                   )}
+
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-400/20 bg-blue-400/10 text-blue-400 hover:bg-blue-400/20 text-sm transition-all"
+                  >
+                    <Share2 size={14} /> Share
+                  </button>
 
                   <Link
                     href="/collection"
