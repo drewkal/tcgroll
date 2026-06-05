@@ -186,10 +186,7 @@ export default function WithdrawPage() {
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-[600px] overflow-y-auto pr-1">
               {filtered.map(uc => (
-                <div key={uc.id} onClick={() => toggleCard(uc.id)}
-                  className={cn('cursor-pointer rounded-xl transition-all', selectedCards.has(uc.id) ? 'ring-2 ring-yellow-400 scale-95' : 'hover:scale-105')}>
-                  <CardDisplay card={uc.card as any} size="sm" selected={selectedCards.has(uc.id)} onSelect={() => toggleCard(uc.id)} />
-                </div>
+                <CardDisplay key={uc.id} card={uc.card as any} size="sm" selected={selectedCards.has(uc.id)} onSelect={() => toggleCard(uc.id)} />
               ))}
             </div>
           )}
