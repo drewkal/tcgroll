@@ -11,6 +11,7 @@ import { formatCurrency, getRarityLabel, getTierLabel } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import { Package, ChevronLeft, Zap, RotateCcw, Info, DollarSign, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LowBalanceModal } from '@/components/low-balance-modal'
 
 function fmtRate(rate: number): string {
   if (rate >= 1)   return rate.toFixed(2) + '%'
@@ -311,9 +312,17 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const [isSelling,      setIsSelling]      = useState(false)
   const [revealingCard,  setRevealingCard]  = useState<Card | null>(null)
   const [revealExiting,  setRevealExiting]  = useState(false)
+  const [showLowBalance, setShowLowBalance] = useState(false)
 
   const balance   = currentBalance ?? session?.user?.balance ?? 0
   const canAfford = balance >= cardCase.price
+
+  useEffect(() => {
+    if (phase === 'done' && !canAfford) {
+      const t = setTimeout(() => setShowLowBalance(true), 1500)
+      return () => clearTimeout(t)
+    }
+  }, [phase, canAfford])
 
   const handleOpen = useCallback(async () => {
     if (openingRef.current || phase !== 'idle') return
@@ -428,6 +437,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const totalValue = revealedCards.reduce((s, c) => s + c.value, 0)
 
   return (
+    <>
     <div className="min-h-screen px-4 py-8 max-w-6xl mx-auto">
       <Link href="/cases" className="inline-flex items-center gap-2 text-slate-400 hover:text-yellow-400 transition-colors mb-8 text-sm font-mono">
         <ChevronLeft size={16} /> Back to Cases
@@ -758,6 +768,11 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
         </div>
       </div>
     </div>
+
+    {showLowBalance && (
+      <LowBalanceModal balance={balance} onClose={() => setShowLowBalance(false)} />
+    )}
+    </>
   )
 }
 
