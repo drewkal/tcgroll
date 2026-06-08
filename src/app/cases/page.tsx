@@ -1,5 +1,5 @@
 // src/app/cases/page.tsx
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 import { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Browse Cases',
   description: 'Browse all virtual TCG cases on TCGRoll. Open Pokémon, One Piece, Magic: The Gathering, and Dragon Ball card cases with published drop rates.',
 }
-import { Package, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 async function getCasesByGame() {

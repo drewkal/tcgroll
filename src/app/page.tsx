@@ -1,5 +1,5 @@
 // src/app/page.tsx
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
   alternates: { canonical: 'https://tcgroll.com/' },
@@ -13,7 +13,7 @@ import { GameCardVisual } from '@/components/game-card-visual'
 import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSettings } from '@/lib/settings'
 import { Logo } from '@/components/logo'
-import { RecentPullsTicker, type TickerPull } from '@/components/recent-pulls-ticker'
+import { RecentPullsTicker } from '@/components/recent-pulls-ticker'
 
 const TOP_CARDS_INCLUDE = {
   caseCards: {
@@ -53,33 +53,6 @@ async function getGameCards() {
   return Object.fromEntries(games.map((g, i) => [g, results[i]])) as Record<string, { id: string; name: string; imageUrl: string | null; rarity: string; game: string }[]>
 }
 
-async function getRecentPulls(): Promise<TickerPull[]> {
-  const rows = await prisma.openingCard.findMany({
-    include: {
-      card: { select: { name: true, rarity: true, imageUrl: true } },
-      opening: {
-        select: {
-          case: { select: { name: true } },
-          user: { select: { name: true } },
-        },
-      },
-    },
-    where: { card: { rarity: { in: ['EPIC', 'LEGENDARY'] } } },
-    orderBy: { opening: { createdAt: 'desc' } },
-    take: 30,
-  })
-  return rows
-    .filter(r => r.opening.user.name)
-    .map(r => ({
-      id: r.id,
-      user: r.opening.user.name!.split(' ')[0],
-      card: r.card.name,
-      rarity: r.card.rarity,
-      caseName: r.opening.case.name,
-      imageUrl: r.card.imageUrl,
-    }))
-}
-
 async function getSiteStats() {
   const [totalOpenings, totalUsers] = await Promise.all([
     prisma.caseOpening.count(),
@@ -89,19 +62,18 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, gameCards, settings, recentPulls] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, settings] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getGameCards(),
     getSettings(['hero_banner', 'logo_header']),
-    getRecentPulls(),
   ])
 
   return (
     <div className="min-h-screen">
 
-      <RecentPullsTicker pulls={recentPulls} />
+      <RecentPullsTicker />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-2 pb-16 px-4">
@@ -114,7 +86,6 @@ export default async function HomePage() {
               fill
               className="object-cover object-center opacity-30"
               priority
-              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[#080d1a]/40 via-[#080d1a]/60 to-[#080d1a]" />
           </div>
@@ -232,7 +203,7 @@ export default async function HomePage() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    {gameCases.map(cardCase => (
+                    {gameCases.map((cardCase: typeof allCases[0]) => (
                       <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} />
                     ))}
                   </div>
@@ -261,7 +232,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {featuredCases.map(cardCase => (
+            {featuredCases.map((cardCase: typeof featuredCases[0]) => (
               <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} featured />
             ))}
           </div>

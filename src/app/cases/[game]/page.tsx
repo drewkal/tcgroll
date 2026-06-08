@@ -1,8 +1,8 @@
 // src/app/cases/[game]/page.tsx
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 import { prisma } from '@/lib/prisma'
 import { CaseCard } from '@/components/cards/case-card'
-import { getGame, GAME_SLUGS } from '@/lib/games'
+import { getGame } from '@/lib/games'
 import { notFound } from 'next/navigation'
 import { Package, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'

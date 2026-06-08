@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { getRarityColor } from '@/lib/opening-engine'
 
 export type TickerPull = {
@@ -25,19 +26,30 @@ const SEED: TickerPull[] = [
   { id: 's12', user: 'SnapperX',     card: 'Boa Hancock',             rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
 ]
 
-export function RecentPullsTicker({ pulls }: { pulls: TickerPull[] }) {
-  const merged: TickerPull[] = []
+function merge(live: TickerPull[]): TickerPull[] {
+  const out: TickerPull[] = []
   const seen = new Set<string>()
-  for (const p of [...pulls, ...SEED]) {
-    if (!seen.has(p.id)) { seen.add(p.id); merged.push(p) }
-    if (merged.length >= 30) break
+  for (const p of [...live, ...SEED]) {
+    if (!seen.has(p.id)) { seen.add(p.id); out.push(p) }
+    if (out.length >= 30) break
   }
+  return out
+}
 
-  const items = [...merged, ...merged]
+export function RecentPullsTicker() {
+  const [pulls, setPulls] = useState<TickerPull[]>(SEED)
+
+  useEffect(() => {
+    fetch('/api/recent-pulls')
+      .then(r => r.ok ? r.json() : [])
+      .then((live: TickerPull[]) => setPulls(merge(live)))
+      .catch(() => {})
+  }, [])
+
+  const items = [...pulls, ...pulls]
 
   return (
     <div className="w-full overflow-hidden bg-black/40 backdrop-blur-sm border-b border-white/5 py-3 relative">
-      {/* Fade edges */}
       <div className="absolute inset-y-0 left-0 z-10 w-20 pointer-events-none"
         style={{ background: 'linear-gradient(to right, #080c18 0%, transparent 100%)' }} />
       <div className="absolute inset-y-0 right-0 z-10 w-20 pointer-events-none"
@@ -46,7 +58,7 @@ export function RecentPullsTicker({ pulls }: { pulls: TickerPull[] }) {
       <div
         className="flex gap-5 items-center"
         style={{
-          animation: `ticker-scroll ${merged.length * 4}s linear infinite`,
+          animation: `ticker-scroll ${pulls.length * 4}s linear infinite`,
           width: 'max-content',
           willChange: 'transform',
         }}
@@ -59,34 +71,23 @@ export function RecentPullsTicker({ pulls }: { pulls: TickerPull[] }) {
               className="flex items-center gap-2.5 flex-shrink-0 px-3 py-1 rounded-xl"
               style={{ background: color + '0d', border: `1px solid ${color}25` }}
             >
-              {/* Card image */}
               <div
                 className="rounded-md overflow-hidden flex-shrink-0"
                 style={{
-                  width: 36,
-                  height: 50,
+                  width: 36, height: 50,
                   border: `1.5px solid ${color}55`,
                   boxShadow: `0 0 8px ${color}44`,
                   background: `linear-gradient(160deg, ${color}22 0%, #0a0f1e 80%)`,
                 }}
               >
                 {pull.imageUrl ? (
-                  <img
-                    src={pull.imageUrl}
-                    alt={pull.card}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                  <img src={pull.imageUrl} alt={pull.card} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center text-[10px] font-mono text-center leading-tight px-0.5"
-                    style={{ color: color + 'aa' }}
-                  >
+                  <div className="w-full h-full flex items-center justify-center text-[10px] font-mono text-center leading-tight px-0.5" style={{ color: color + 'aa' }}>
                     {pull.card.slice(0, 6)}
                   </div>
                 )}
               </div>
-
-              {/* Text */}
               <div className="flex flex-col gap-0">
                 <span className="text-[11px] font-mono text-slate-400 leading-tight">{pull.user}</span>
                 <span className="text-[12px] font-semibold leading-tight whitespace-nowrap" style={{ color }}>
