@@ -87,7 +87,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                   Sign In
                 </Link>
                 <Link href="/register" className="btn-gold px-4 py-2 rounded-lg text-sm">
-                  Get Started
+                  Sign Up
                 </Link>
               </>
             )}
@@ -140,7 +140,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
             ) : (
               <div className="space-y-2">
                 <Link href="/login" onClick={() => setMobileOpen(false)} className="block px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-white/5">Sign In</Link>
-                <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-gold block text-center px-4 py-3 rounded-lg">Get Started</Link>
+                <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-gold block text-center px-4 py-3 rounded-lg">Sign Up</Link>
               </div>
             )}
           </div>
