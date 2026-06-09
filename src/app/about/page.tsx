@@ -1,7 +1,7 @@
 // src/app/about/page.tsx
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { Zap, Package, TrendingUp, Shield } from 'lucide-react'
+import { Zap, Package, TrendingUp, Truck } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'About TCGRoll',
@@ -24,7 +24,7 @@ export default function AboutPage() {
           { icon: Package, title: 'Real Rarity Odds', desc: 'Every case uses provably fair weighted randomness that mirrors real booster pack odds.' },
           { icon: Zap, title: 'Multi-Game Library', desc: 'Four iconic TCGs in one place — Pokémon, One Piece, Magic, and Dragon Ball.' },
           { icon: TrendingUp, title: 'Build & Trade', desc: 'Collect cards, sell duplicates for tokens, or exchange for cards you actually want.' },
-          { icon: Shield, title: 'Safe & Fair', desc: 'All tokens are virtual. No gambling, no real money wagered — just pure collection fun.' },
+          { icon: Truck, title: 'Shipped to Your Door', desc: 'Cards you win are real. Request a withdrawal and we\'ll mail the physical cards straight to your address.' },
         ].map(({ icon: Icon, title, desc }) => (
           <div key={title} className="glass rounded-2xl border border-white/5 p-6">
             <Icon size={28} className="text-yellow-400 mb-4" />
