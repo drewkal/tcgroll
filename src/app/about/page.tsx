@@ -38,7 +38,7 @@ export default function AboutPage() {
         <h2 className="font-display text-3xl tracking-wide text-white mb-3">Ready to start collecting?</h2>
         <p className="text-slate-400 mb-6">Create a free account and receive 🪙 500 bonus tokens to open your first cases.</p>
         <Link href="/register" className="btn-gold inline-flex px-8 py-3 rounded-xl font-display tracking-widest">
-          Get Started Free
+          Sign Up Free
         </Link>
       </div>
     </div>
