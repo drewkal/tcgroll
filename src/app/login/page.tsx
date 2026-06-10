@@ -1,7 +1,7 @@
 // src/app/login/page.tsx
 'use client'
-import { useState, Suspense } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect, Suspense } from 'react'
+import { signIn, getProviders } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -27,6 +27,11 @@ function LoginForm() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleEnabled, setGoogleEnabled] = useState(false)
+
+  useEffect(() => {
+    getProviders().then(p => setGoogleEnabled(!!p?.google))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +51,12 @@ function LoginForm() {
 
   const handleGoogle = async () => {
     setGoogleLoading(true)
-    await signIn('google', { callbackUrl })
+    try {
+      await signIn('google', { callbackUrl })
+    } catch {
+      toast.error('Google sign-in failed')
+      setGoogleLoading(false)
+    }
   }
 
   return (
@@ -63,23 +73,26 @@ function LoginForm() {
         <div className="glass rounded-2xl border border-white/5 p-8 space-y-5">
 
           {/* Google */}
-          <button
-            onClick={handleGoogle}
-            disabled={googleLoading || loading}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50"
-          >
-            {googleLoading
-              ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <GoogleIcon />
-            }
-            Continue with Google
-          </button>
-
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-slate-500 font-mono">OR</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
+          {googleEnabled && (
+            <>
+              <button
+                onClick={handleGoogle}
+                disabled={googleLoading || loading}
+                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50"
+              >
+                {googleLoading
+                  ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <GoogleIcon />
+                }
+                Continue with Google
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs text-slate-500 font-mono">OR</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+            </>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
