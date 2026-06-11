@@ -66,6 +66,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           subject: '🎉 Welcome to TCGRoll — your 🪙 500 tokens are ready!',
           html: welcomeEmail({ name: user.name ?? 'Trainer' }),
         })
+        if (process.env.ADMIN_EMAIL) {
+          await sendEmail({
+            to: process.env.ADMIN_EMAIL,
+            subject: `New sign-up: ${user.name ?? 'Unknown'}`,
+            html: `<p><strong>${user.name ?? 'Unknown'}</strong> just signed up on TCGRoll via Google.</p><p>Email: ${user.email}</p><p><a href="https://tcgroll.com/admin">View Admin Panel</a></p>`,
+          })
+        }
       }
     },
   },

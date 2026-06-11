@@ -44,6 +44,14 @@ export async function POST(req: NextRequest) {
       html: welcomeEmail({ name }),
     })
 
+    if (process.env.ADMIN_EMAIL) {
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: `New sign-up: ${name}`,
+        html: `<p><strong>${name}</strong> just signed up on TCGRoll.</p><p>Email: ${email}</p><p><a href="https://tcgroll.com/admin">View Admin Panel</a></p>`,
+      })
+    }
+
     return NextResponse.json({ success: true, message: 'Account created with 🪙 500 welcome bonus!' })
   } catch (error) {
     console.error('Register error:', error)
