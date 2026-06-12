@@ -9,6 +9,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { getSettings } from '@/lib/settings'
 import Script from 'next/script'
 import { VerifyEmailBanner } from '@/components/verify-email-banner'
+import { CookieBanner } from '@/components/cookie-banner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tcgroll.com'),
@@ -37,6 +38,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className="noise">
       <head>
+        {/* Consent defaults must be set before GA/GTM load */}
+        <Script id="consent-default" strategy="beforeInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', {
+            analytics_storage: 'denied',
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            wait_for_update: 500
+          });
+          try {
+            var c = localStorage.getItem('cookie_consent');
+            if (c === 'granted') {
+              gtag('consent', 'update', {
+                analytics_storage: 'granted',
+                ad_storage: 'granted',
+                ad_user_data: 'granted',
+                ad_personalization: 'granted'
+              });
+            }
+          } catch(e) {}
+        `}</Script>
         <Script id="gtm-head" strategy="afterInteractive">{`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -77,6 +101,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
         </Providers>
         <SiteFooter logoUrl={logos.logo_footer || null} />
+        <CookieBanner />
         <Analytics />
       </body>
     </html>
