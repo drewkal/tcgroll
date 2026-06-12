@@ -7,6 +7,7 @@ declare module 'next-auth' {
       id: string
       role: string
       balance: number
+      emailVerified: Date | null
     } & DefaultSession['user']
   }
 }

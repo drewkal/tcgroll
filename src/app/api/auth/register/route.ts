@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { welcomeEmail } from '@/emails/welcome'
+import { verifyEmailTemplate } from '@/emails/verify-email'
+import { randomUUID } from 'crypto'
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +44,18 @@ export async function POST(req: NextRequest) {
       to: email,
       subject: '🎉 Welcome to TCGRoll — your 🪙 500 tokens are ready!',
       html: welcomeEmail({ name }),
+    })
+
+    // Send verification email
+    const verifyToken = randomUUID()
+    await prisma.verificationToken.create({
+      data: { identifier: email, token: verifyToken, expires: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+    })
+    const base = process.env.AUTH_URL ?? 'https://tcgroll.com'
+    await sendEmail({
+      to: email,
+      subject: '📬 Verify your TCGRoll email — claim 🪙 250 tokens',
+      html: verifyEmailTemplate({ name, verifyUrl: `${base}/api/auth/verify-email?token=${verifyToken}` }),
     })
 
     if (process.env.ADMIN_EMAIL) {

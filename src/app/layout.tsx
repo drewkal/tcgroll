@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/next'
 import { getSettings } from '@/lib/settings'
 import Script from 'next/script'
+import { VerifyEmailBanner } from '@/components/verify-email-banner'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tcgroll.com'),
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </noscript>
         <Providers>
           <Navbar logoUrl={logos.logo_header || null} />
+          <VerifyEmailBanner />
           <main className="min-h-screen">{children}</main>
           <Toaster
             position="bottom-right"

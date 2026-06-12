@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 }
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { VerifiedToast } from '@/components/verified-toast'
 
 async function getCasesByGame() {
   return prisma.cardCase.findMany({
@@ -32,6 +34,7 @@ export default async function CasesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-16">
+      <Suspense><VerifiedToast /></Suspense>
       {/* Header */}
       <div>
         <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— MARKETPLACE</p>
