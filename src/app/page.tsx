@@ -115,8 +115,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-5 font-light leading-relaxed px-2">
-            Roll virtual TCG cases with real rarity odds. Pull legendary holos,
-            build your dream collection, and sell duplicates for balance.
+            Open TCG cases with real rarity odds. Win real cards shipped straight to your door —
+            pull legendary holos, build your collection, and sell duplicates for balance.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6 px-2">
