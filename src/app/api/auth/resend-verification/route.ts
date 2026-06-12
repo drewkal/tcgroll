@@ -31,7 +31,7 @@ export async function POST() {
   const base = process.env.AUTH_URL ?? 'https://tcgroll.com'
   await sendEmail({
     to: session.user.email,
-    subject: '📬 Verify your TCGRoll email — claim 🪙 250 tokens',
+    subject: '📬 Verify your TCGRoll email — claim 🪙 750 free tokens',
     html: verifyEmailTemplate({
       name: session.user.name ?? 'Trainer',
       verifyUrl: `${base}/api/auth/verify-email?token=${token}`,

@@ -16,7 +16,7 @@ export function verifyEmailTemplate({ name, verifyUrl }: { name: string; verifyU
       <p style="font-size:15px;color:#94a3b8;line-height:1.6;margin:0 0 8px;">
         Hi ${name} — click below to verify your email and claim your
       </p>
-      <p style="font-size:22px;font-weight:700;color:#fbbf24;margin:0 0 28px;">🪙 250 bonus tokens</p>
+      <p style="font-size:22px;font-weight:700;color:#fbbf24;margin:0 0 28px;">🪙 750 free tokens</p>
       <a href="${verifyUrl}"
         style="display:inline-block;background:#fbbf24;color:#000000;font-weight:700;font-size:14px;letter-spacing:2px;padding:14px 32px;border-radius:10px;text-decoration:none;text-transform:uppercase;">
         Verify Email &amp; Claim Tokens

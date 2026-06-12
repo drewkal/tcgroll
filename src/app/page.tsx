@@ -135,7 +135,7 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link href="/register" className="w-full sm:w-auto relative btn-gold px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
               <Zap size={18} className="fill-black" />
-              Start Free — 🪙 500 Bonus
+              Start Free — 🪙 750 Bonus
             </Link>
             <Link href="/cases" className="w-full sm:w-auto px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
               Browse Cases
@@ -270,7 +270,7 @@ export default async function HomePage() {
           <div className="relative">
             <Shield size={40} className="text-yellow-400 mx-auto mb-4 md:mb-6 md:w-12 md:h-12" />
             <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white mb-3 md:mb-4">READY TO ROLL?</h2>
-            <p className="text-slate-400 mb-8">Create a free account and get 🪙 500 bonus tokens to start opening cases immediately.</p>
+            <p className="text-slate-400 mb-8">Create a free account, verify your email, and get 🪙 750 free tokens to start opening cases immediately.</p>
             <Link href="/register" className="btn-gold inline-flex items-center gap-2 px-10 py-4 rounded-xl font-display tracking-widest text-lg">
               Create Free Account
               <Zap size={18} className="fill-black" />

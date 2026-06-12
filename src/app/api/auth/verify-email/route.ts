@@ -21,10 +21,10 @@ export async function GET(req: NextRequest) {
   if (!user.emailVerified) {
     await prisma.user.update({
       where: { email: record.identifier },
-      data: { emailVerified: new Date(), balance: { increment: 250 } },
+      data: { emailVerified: new Date(), balance: { increment: 750 } },
     })
     await prisma.transaction.create({
-      data: { userId: user.id, amount: 250, type: 'DEPOSIT', description: '🪙 250 email verification bonus!' },
+      data: { userId: user.id, amount: 750, type: 'DEPOSIT', description: '🪙 750 welcome bonus!' },
     })
   }
 

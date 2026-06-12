@@ -10,7 +10,7 @@ export function VerifiedToast() {
   useEffect(() => {
     const v = searchParams.get('verified')
     if (!v) return
-    if (v === '1')       toast.success('Email verified! 🪙 250 tokens added to your balance.')
+    if (v === '1')       toast.success('Email verified! 🪙 750 tokens added to your balance.')
     if (v === 'expired') toast.error('Verification link expired — resend from the banner above.')
     if (v === 'error')   toast.error('Verification failed — please try again.')
     router.replace('/cases')
