@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette, Swords } from 'lucide-react'
+import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette, Swords, ChevronRight } from 'lucide-react'
 import { SeedBotsButton } from './seed-bots-button'
 import { EditBalanceButton } from './edit-balance-button'
 
@@ -312,10 +312,15 @@ export default async function AdminPage() {
 
       {/* Recent users */}
       <div className="glass rounded-2xl border border-white/5 p-6">
-        <h2 className="font-display text-2xl text-white tracking-wide mb-6 flex items-center gap-2">
-          <Users size={20} className="text-yellow-400" />
-          RECENT USERS
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-display text-2xl text-white tracking-wide flex items-center gap-2">
+            <Users size={20} className="text-yellow-400" />
+            RECENT USERS
+          </h2>
+          <Link href="/admin/users" className="text-xs font-mono text-yellow-400 hover:text-yellow-300 transition-colors flex items-center gap-1">
+            View all <ChevronRight size={13} />
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
