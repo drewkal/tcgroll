@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { openBotCase } from '@/app/api/cron/bot-battles/route'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -37,6 +38,13 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       },
     }),
   ])
+
+  // If creator is a bot, auto-open their case immediately
+  const creator = await prisma.user.findUnique({ where: { id: battle.creatorId }, select: { email: true } })
+  if (creator?.email?.endsWith('@tcgroll.bot')) {
+    // Fire and forget — don't block the response
+    openBotCase(id, battle.creatorId, battle.caseId, battle.case.price).catch(() => {})
+  }
 
   return NextResponse.json(updated)
 }
