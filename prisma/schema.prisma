@@ -315,15 +315,17 @@ model Battle {
   case         CardCase     @relation(fields: [caseId], references: [id])
   wager        Float        @default(0)
 
-  creatorId    String
-  creator      User         @relation("BattleCreator", fields: [creatorId], references: [id])
-  creatorValue Float?
-  creatorCards Json?
+  creatorId          String
+  creator            User         @relation("BattleCreator", fields: [creatorId], references: [id])
+  creatorValue       Float?
+  creatorCards       Json?
+  creatorUserCardIds Json?
 
-  joinerId     String?
-  joiner       User?        @relation("BattleJoiner", fields: [joinerId], references: [id])
-  joinerValue  Float?
-  joinerCards  Json?
+  joinerId           String?
+  joiner             User?        @relation("BattleJoiner", fields: [joinerId], references: [id])
+  joinerValue        Float?
+  joinerCards        Json?
+  joinerUserCardIds  Json?
 
   winnerId     String?
 

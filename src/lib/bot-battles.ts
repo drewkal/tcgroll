@@ -81,6 +81,6 @@ export async function openBotCase(battleId: string, botUserId: string, caseId: s
 
   await prisma.battle.update({
     where: { id: battleId },
-    data:  { creatorCards: cardSummary, creatorValue: totalValue },
+    data:  { creatorCards: cardSummary, creatorValue: totalValue, creatorUserCardIds: result.userCardIds ?? [] },
   })
 }
