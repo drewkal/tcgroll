@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette } from 'lucide-react'
+import { SeedBotsButton } from './seed-bots-button'
 
 async function getAdminData() {
   const now = new Date()
@@ -237,6 +238,7 @@ export default async function AdminPage() {
             >
               <Share2 size={14} /> Social
             </Link>
+            <SeedBotsButton />
             <Link
               href="/admin/cases/new"
               className="btn-gold px-4 py-2 rounded-xl text-sm font-display tracking-wider"
