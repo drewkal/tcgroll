@@ -29,6 +29,8 @@ model User {
   withdrawals        WithdrawRequest[]
   exchangesOffering  Exchange[]        @relation("ExchangeOffering")
   exchangesAccepting Exchange[]        @relation("ExchangeAccepting")
+  battlesCreated     Battle[]          @relation("BattleCreator")
+  battlesJoined      Battle[]          @relation("BattleJoiner")
 }
 
 model Account {
@@ -83,6 +85,7 @@ model CardCase {
 
   caseCards   CaseCard[]
   openings    CaseOpening[]
+  battles     Battle[]
 }
 
 model Card {
@@ -303,4 +306,35 @@ model SocialLink {
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Battle {
+  id           String       @id @default(cuid())
+  status       BattleStatus @default(WAITING)
+  caseId       String
+  case         CardCase     @relation(fields: [caseId], references: [id])
+  wager        Float        @default(0)
+
+  creatorId    String
+  creator      User         @relation("BattleCreator", fields: [creatorId], references: [id])
+  creatorValue Float?
+  creatorCards Json?
+
+  joinerId     String?
+  joiner       User?        @relation("BattleJoiner", fields: [joinerId], references: [id])
+  joinerValue  Float?
+  joinerCards  Json?
+
+  winnerId     String?
+
+  expiresAt    DateTime
+  createdAt    DateTime     @default(now())
+}
+
+enum BattleStatus {
+  WAITING
+  READY
+  COMPLETE
+  CANCELLED
+  EXPIRED
 }

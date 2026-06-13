@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
-import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X, Library } from 'lucide-react'
+import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X, Library, Swords } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import Image from 'next/image'
 
@@ -14,6 +14,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
 
   const navLinks = [
     { href: '/cases', label: 'Cases', icon: Package },
+    { href: '/battles', label: 'Battles', icon: Swords },
     { href: '/cards', label: 'Cards', icon: Library },
     { href: '/exchange', label: 'Exchange', icon: ArrowLeftRight },
     { href: '/collection', label: 'Collection', icon: LayoutGrid },
