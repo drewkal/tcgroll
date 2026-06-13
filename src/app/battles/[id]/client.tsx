@@ -7,7 +7,10 @@ import { Swords, Copy, Zap, Loader2, Trophy, Clock, RotateCcw, ChevronLeft } fro
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import { CardDisplay } from '@/components/cards/card-display'
+import { SpinReel, Celebration, playRevealSound } from '@/components/case-reel'
+import { Card } from '@prisma/client'
 
+type CaseCard = { card: Card; dropRate: number }
 type CardSummary = { id: string; name: string; rarity: string; value: number; imageUrl: string | null }
 type Battle = {
   id: string; status: string; wager: number; winnerId: string | null
@@ -15,7 +18,7 @@ type Battle = {
   creatorValue: number | null; creatorCards: CardSummary[] | null
   joinerId: string | null; joiner: { id: string; name: string | null } | null
   joinerValue: number | null; joinerCards: CardSummary[] | null
-  case: { id: string; name: string; price: number; game: string; slug: string }
+  case: { id: string; name: string; price: number; game: string; slug: string; caseCards: CaseCard[] }
   expiresAt: string
 }
 
@@ -27,30 +30,34 @@ const STATUS_LABEL: Record<string, string> = {
   EXPIRED: 'Battle expired',
 }
 
+type SpinPhase = 'idle' | 'fetching' | 'spinning' | 'revealing' | 'done'
+
 export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   const { data: session } = useSession()
   const [battle, setBattle] = useState<Battle>(initialBattle)
-  const [opening, setOpening] = useState(false)
   const [cancelling, setCancelling] = useState(false)
 
-  const isCreator  = session?.user?.id === battle.creatorId
-  const isJoiner   = session?.user?.id === battle.joinerId
+  // Spin state
+  const [spinPhase, setSpinPhase]         = useState<SpinPhase>('idle')
+  const [winningCards, setWinningCards]   = useState<Card[]>([])
+  const [spinIndex, setSpinIndex]         = useState(0)
+  const [revealingCard, setRevealingCard] = useState<Card | null>(null)
+  const [revealExiting, setRevealExiting] = useState(false)
+
+  const isCreator     = session?.user?.id === battle.creatorId
+  const isJoiner      = session?.user?.id === battle.joinerId
   const isParticipant = isCreator || isJoiner
-  const myCards    = isCreator ? battle.creatorCards : battle.joinerCards
-  const oppCards   = isCreator ? battle.joinerCards  : battle.creatorCards
-  const myValue    = isCreator ? battle.creatorValue  : battle.joinerValue
-  const oppValue   = isCreator ? battle.joinerValue   : battle.creatorValue
-  const opponent   = isCreator ? battle.joiner        : battle.creator
-  const iWon       = battle.winnerId === session?.user?.id
+  const myCards       = isCreator ? battle.creatorCards : battle.joinerCards
+  const oppCards      = isCreator ? battle.joinerCards  : battle.creatorCards
+  const opponent      = isCreator ? battle.joiner        : battle.creator
+  const iWon          = battle.winnerId === session?.user?.id
+  const hasOpened     = !!myCards || spinPhase !== 'idle'
 
   // Poll for updates while battle is active
   const poll = useCallback(async () => {
     try {
       const res = await fetch(`/api/battles/${battle.id}`)
-      if (res.ok) {
-        const data = await res.json()
-        setBattle(data)
-      }
+      if (res.ok) setBattle(await res.json())
     } catch {}
   }, [battle.id])
 
@@ -61,16 +68,43 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   }, [battle.status, poll])
 
   const handleOpen = async () => {
-    setOpening(true)
+    if (spinPhase !== 'idle') return
+    setSpinPhase('fetching')
     try {
       const res = await fetch(`/api/battles/${battle.id}/open`, { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) { toast.error(data.error); return }
+      if (!res.ok) { toast.error(data.error); setSpinPhase('idle'); return }
+      setWinningCards(data.myCards ?? [])
+      setSpinIndex(0)
+      setSpinPhase('spinning')
       setBattle(data)
-    } finally {
-      setOpening(false)
+    } catch {
+      toast.error('Something went wrong'); setSpinPhase('idle')
     }
   }
+
+  const handleSpinComplete = useCallback(() => {
+    const card = winningCards[spinIndex]
+    if (!card) return
+    setRevealingCard(card)
+    setRevealExiting(false)
+    setSpinPhase('revealing')
+    const revealMs = (card.rarity === 'LEGENDARY' || card.rarity === 'EPIC') ? 3000 : 2000
+    setTimeout(() => {
+      setRevealExiting(true)
+      setTimeout(() => {
+        setRevealingCard(null)
+        setRevealExiting(false)
+        const next = spinIndex + 1
+        if (next >= winningCards.length) {
+          setSpinPhase('done')
+        } else {
+          setSpinIndex(next)
+          setSpinPhase('spinning')
+        }
+      }, 350)
+    }, revealMs)
+  }, [spinIndex, winningCards])
 
   const handleCancel = async () => {
     setCancelling(true)
@@ -79,9 +113,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
       if (!res.ok) { toast.error((await res.json()).error); return }
       setBattle(b => ({ ...b, status: 'CANCELLED' }))
       toast.success('Battle cancelled — tokens refunded')
-    } finally {
-      setCancelling(false)
-    }
+    } finally { setCancelling(false) }
   }
 
   const copyLink = () => {
@@ -89,7 +121,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
     toast.success('Link copied!')
   }
 
-  const hasOpened = isCreator ? !!battle.creatorCards : !!battle.joinerCards
+  const isSpinning = spinPhase === 'spinning' || spinPhase === 'revealing' || spinPhase === 'fetching'
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -114,7 +146,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
         </div>
       </div>
 
-      {/* WAITING state */}
+      {/* WAITING */}
       {battle.status === 'WAITING' && (
         <div className="glass rounded-2xl border border-yellow-400/20 p-10 text-center mb-6">
           <div className="w-16 h-16 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center mx-auto mb-5">
@@ -131,59 +163,54 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
             </button>
           </div>
           {isCreator && (
-            <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="text-xs font-mono text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 mx-auto"
-            >
-              {cancelling ? <Loader2 size={11} className="animate-spin" /> : null}
-              Cancel & refund
+            <button onClick={handleCancel} disabled={cancelling} className="text-xs font-mono text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 mx-auto">
+              {cancelling && <Loader2 size={11} className="animate-spin" />} Cancel & refund
             </button>
           )}
         </div>
       )}
 
-      {/* READY / in-progress state */}
-      {(battle.status === 'READY' || (battle.status === 'COMPLETE' && (battle.creatorCards || battle.joinerCards))) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      {/* READY / SPINNING / COMPLETE — both player panels */}
+      {(battle.status === 'READY' || battle.status === 'COMPLETE') && (
+        <div className="grid grid-cols-2 gap-4 mb-5">
           {[
-            { label: battle.creator.name ?? 'Creator', cards: battle.creatorCards, value: battle.creatorValue, playerId: battle.creatorId },
-            { label: battle.joiner?.name ?? 'Opponent',  cards: battle.joinerCards,  value: battle.joinerValue,  playerId: battle.joinerId },
-          ].map(({ label, cards, value, playerId }) => {
-            const isMe = session?.user?.id === playerId
-            const won  = battle.status === 'COMPLETE' && battle.winnerId === playerId
+            { label: battle.creator.name ?? 'Creator', cards: battle.creatorCards, value: battle.creatorValue, playerId: battle.creatorId, isMe: isCreator },
+            { label: battle.joiner?.name ?? 'Challenger', cards: battle.joinerCards, value: battle.joinerValue, playerId: battle.joinerId, isMe: isJoiner },
+          ].map(({ label, cards, value, playerId, isMe }) => {
+            const won = battle.status === 'COMPLETE' && battle.winnerId === playerId
+            const showSpinning = isMe && isSpinning
             return (
-              <div
-                key={playerId ?? label}
-                className="glass rounded-2xl border p-5"
-                style={{ borderColor: won ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.06)' }}
-              >
-                <div className="flex items-center justify-between mb-4">
+              <div key={playerId ?? label} className="glass rounded-2xl border p-4" style={{ borderColor: won ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.06)' }}>
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    {won && <Trophy size={16} className="text-yellow-400" />}
-                    <span className="font-display text-xl text-white tracking-wide">{label}</span>
+                    {won && <Trophy size={14} className="text-yellow-400" />}
+                    <span className="font-display text-lg text-white tracking-wide">{label}</span>
                     {isMe && <span className="text-xs font-mono text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">YOU</span>}
                   </div>
                   {value !== null && value !== undefined && (
-                    <span className={`font-mono font-bold ${won ? 'text-yellow-400' : 'text-slate-300'}`}>{formatCurrency(value)}</span>
+                    <span className={`font-mono text-sm font-bold ${won ? 'text-yellow-400' : 'text-slate-300'}`}>{formatCurrency(value)}</span>
                   )}
                 </div>
 
-                {cards ? (
-                  <div className="grid grid-cols-3 gap-2">
-                    {(cards as CardSummary[]).map((card, i) => (
-                      <div key={i}>
-                        <CardDisplay card={card as any} size="sm" />
-                      </div>
-                    ))}
+                {/* My cards — shown after spin is done */}
+                {isMe && (spinPhase === 'done' || battle.status === 'COMPLETE') && myCards ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {myCards.map((card, i) => <CardDisplay key={i} card={card as any} size="sm" />)}
+                  </div>
+                ) : cards && !isMe ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {(cards as CardSummary[]).map((card, i) => <CardDisplay key={i} card={card as any} size="sm" />)}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-40 text-slate-600">
-                    {isMe && battle.status === 'READY' && !hasOpened ? (
-                      <p className="text-sm font-mono">Ready to open</p>
+                  <div className="flex flex-col items-center justify-center h-28 text-slate-600">
+                    {showSpinning ? (
+                      <div className="flex items-center gap-2 text-yellow-400 text-sm font-mono animate-pulse">
+                        <Zap size={14} className="fill-yellow-400" /> OPENING…
+                      </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-sm font-mono animate-pulse">
-                        <Loader2 size={14} className="animate-spin" /> Waiting…
+                      <div className="flex items-center gap-2 text-slate-600 text-sm font-mono animate-pulse">
+                        <Loader2 size={14} className="animate-spin" />
+                        {isMe ? 'Ready' : 'Waiting…'}
                       </div>
                     )}
                   </div>
@@ -194,31 +221,78 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
         </div>
       )}
 
+      {/* Spin reel — full width below panels */}
+      {spinPhase === 'spinning' && winningCards[spinIndex] && (
+        <div className="glass rounded-2xl border border-yellow-400/20 p-4 overflow-hidden animate-fade-in mb-5">
+          <div className="flex items-center justify-between px-1 mb-3">
+            <span className="text-xs font-mono text-slate-500 tracking-widest">CARD {spinIndex + 1} OF {winningCards.length}</span>
+            <div className="flex gap-1.5">
+              {winningCards.map((_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full transition-all ${i < spinIndex ? 'bg-yellow-400' : i === spinIndex ? 'bg-yellow-400 animate-pulse scale-125' : 'bg-white/10'}`} />
+              ))}
+            </div>
+          </div>
+          <SpinReel
+            key={spinIndex}
+            caseCards={battle.case.caseCards}
+            winner={winningCards[spinIndex]}
+            onComplete={handleSpinComplete}
+          />
+        </div>
+      )}
+
+      {/* Card reveal overlay */}
+      {spinPhase === 'revealing' && revealingCard && (
+        <>
+          {(revealingCard.rarity === 'LEGENDARY' || revealingCard.rarity === 'EPIC') && <Celebration rarity={revealingCard.rarity} />}
+          <div
+            className="glass rounded-2xl border flex flex-col items-center justify-center py-8 gap-4 mb-5"
+            style={{
+              borderColor: getRarityColor(revealingCard.rarity) + '60',
+              background: `radial-gradient(ellipse at center, ${getRarityColor(revealingCard.rarity)}12 0%, transparent 70%)`,
+              transition: 'opacity 0.35s ease-out, transform 0.35s ease-out',
+              opacity: revealExiting ? 0 : 1,
+              transform: revealExiting ? 'scale(0.94) translateY(16px)' : 'scale(1) translateY(0)',
+            }}
+          >
+            <CardDisplay card={revealingCard as any} size="xl" />
+            <div className="text-center">
+              <div className="font-display text-2xl tracking-widest" style={{ color: getRarityColor(revealingCard.rarity), textShadow: `0 0 20px ${getRarityColor(revealingCard.rarity)}` }}>
+                {revealingCard.rarity === 'LEGENDARY' ? '🏆 LEGENDARY!' : revealingCard.rarity === 'EPIC' ? '✨ EPIC PULL!' : revealingCard.rarity === 'RARE' ? '⭐ RARE PULL' : revealingCard.name}
+              </div>
+              <div className="font-mono text-lg text-yellow-400 mt-1">{formatCurrency(revealingCard.value)}</div>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Open button */}
-      {battle.status === 'READY' && isParticipant && !hasOpened && (
+      {battle.status === 'READY' && isParticipant && !hasOpened && spinPhase === 'idle' && (
         <button
           onClick={handleOpen}
-          disabled={opening}
-          className="w-full py-5 rounded-2xl btn-gold font-display text-2xl tracking-widest flex items-center justify-center gap-3 shadow-gold-glow animate-glow-pulse"
+          className="w-full py-5 rounded-2xl btn-gold font-display text-2xl tracking-widest flex items-center justify-center gap-3 shadow-gold-glow animate-glow-pulse mb-5"
         >
-          {opening
-            ? <><Loader2 size={24} className="animate-spin" /> OPENING…</>
-            : <><Zap size={24} className="fill-black" /> OPEN YOUR CASE</>
-          }
+          <Zap size={24} className="fill-black" /> OPEN YOUR CASE
         </button>
       )}
 
-      {/* Waiting for opponent to open */}
-      {battle.status === 'READY' && isParticipant && hasOpened && (
-        <div className="glass rounded-2xl border border-white/5 p-6 text-center">
+      {spinPhase === 'fetching' && (
+        <div className="w-full py-5 rounded-2xl glass border border-yellow-400/20 flex items-center justify-center gap-3 text-yellow-400 font-display text-xl tracking-widest mb-5">
+          <Loader2 size={22} className="animate-spin" /> ROLLING…
+        </div>
+      )}
+
+      {/* Waiting for opponent after you've opened */}
+      {battle.status === 'READY' && isParticipant && spinPhase === 'done' && !battle.winnerId && (
+        <div className="glass rounded-2xl border border-white/5 p-6 text-center mb-5">
           <Loader2 size={24} className="animate-spin text-yellow-400 mx-auto mb-3" />
           <p className="font-display text-xl text-white tracking-wide">WAITING FOR {opponent?.name?.toUpperCase() ?? 'OPPONENT'}…</p>
         </div>
       )}
 
-      {/* Complete state banner */}
+      {/* Complete */}
       {battle.status === 'COMPLETE' && isParticipant && (
-        <div className={`rounded-2xl border p-6 text-center mt-4 ${iWon ? 'border-yellow-400/40 bg-yellow-400/5' : 'border-white/10 bg-white/2'}`}>
+        <div className={`rounded-2xl border p-6 text-center ${iWon ? 'border-yellow-400/40 bg-yellow-400/5' : 'border-white/10 bg-white/2'}`}>
           {iWon ? (
             <>
               <Trophy size={40} className="text-yellow-400 mx-auto mb-3" />
@@ -241,7 +315,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
         </div>
       )}
 
-      {/* Cancelled/expired */}
+      {/* Cancelled / Expired */}
       {(battle.status === 'CANCELLED' || battle.status === 'EXPIRED') && (
         <div className="glass rounded-2xl border border-white/5 p-8 text-center">
           <p className="font-display text-2xl text-slate-500 tracking-wide mb-1">{battle.status === 'CANCELLED' ? 'BATTLE CANCELLED' : 'BATTLE EXPIRED'}</p>
