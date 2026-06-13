@@ -52,6 +52,8 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   const opponent      = isCreator ? battle.joiner        : battle.creator
   const iWon          = battle.winnerId === session?.user?.id
   const hasOpened     = !!myCards || spinPhase !== 'idle'
+  // Only show cards/results after spin finishes — or immediately if loading an already-complete battle
+  const canShowResults = spinPhase === 'done' || (spinPhase === 'idle' && battle.status === 'COMPLETE')
 
   // Merge incoming battle data but always preserve caseCards from initial state
   const mergeBattle = useCallback((data: Partial<Battle>) => {
@@ -188,21 +190,21 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
               <div key={playerId ?? label} className="glass rounded-2xl border p-4" style={{ borderColor: won ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.06)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    {won && <Trophy size={14} className="text-yellow-400" />}
+                    {won && canShowResults && <Trophy size={14} className="text-yellow-400" />}
                     <span className="font-display text-lg text-white tracking-wide">{label}</span>
                     {isMe && <span className="text-xs font-mono text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">YOU</span>}
                   </div>
-                  {value !== null && value !== undefined && (
+                  {canShowResults && value !== null && value !== undefined && (
                     <span className={`font-mono text-sm font-bold ${won ? 'text-yellow-400' : 'text-slate-300'}`}>{formatCurrency(value)}</span>
                   )}
                 </div>
 
-                {/* My cards — shown after spin is done */}
-                {isMe && (spinPhase === 'done' || battle.status === 'COMPLETE') && myCards ? (
+                {/* Cards — only shown after spin completes */}
+                {isMe && canShowResults && myCards ? (
                   <div className="grid grid-cols-3 gap-1.5">
                     {myCards.map((card, i) => <CardDisplay key={i} card={card as any} size="sm" />)}
                   </div>
-                ) : cards && !isMe ? (
+                ) : !isMe && canShowResults && cards ? (
                   <div className="grid grid-cols-3 gap-1.5">
                     {(cards as CardSummary[]).map((card, i) => <CardDisplay key={i} card={card as any} size="sm" />)}
                   </div>
@@ -296,7 +298,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
       )}
 
       {/* Complete */}
-      {battle.status === 'COMPLETE' && isParticipant && (
+      {battle.status === 'COMPLETE' && isParticipant && canShowResults && (
         <div className={`rounded-2xl border p-6 text-center ${iWon ? 'border-yellow-400/40 bg-yellow-400/5' : 'border-white/10 bg-white/2'}`}>
           {iWon ? (
             <>
