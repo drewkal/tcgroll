@@ -49,21 +49,19 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (bothDone) {
     const creatorValue = isCreator ? totalValue : (updatedBattle?.creatorValue ?? 0)
     const joinerValue  = isJoiner  ? totalValue : (updatedBattle?.joinerValue  ?? 0)
-    const winnerId = creatorValue >= joinerValue ? battle.creatorId : battle.joinerId!
-    const loserId  = winnerId === battle.creatorId ? battle.joinerId! : battle.creatorId
-    const prize = battle.wager * 2
+    const winnerId  = creatorValue >= joinerValue ? battle.creatorId : battle.joinerId!
+    const loserValue = winnerId === battle.creatorId ? joinerValue : creatorValue
+    // Winner gets: both wagers + loser's card value
+    const prize = (battle.wager * 2) + loserValue
 
     finalUpdate = { ...finalUpdate, status: 'COMPLETE', winnerId }
 
     await prisma.$transaction([
       prisma.battle.update({ where: { id }, data: finalUpdate }),
-      // Winner gets both wagers back
-      ...(prize > 0 ? [
-        prisma.user.update({ where: { id: winnerId }, data: { balance: { increment: prize } } }),
-        prisma.transaction.create({
-          data: { userId: winnerId, amount: prize, type: 'SALE', description: `🏆 Battle won — 🪙${prize} prize` },
-        }),
-      ] : []),
+      prisma.user.update({ where: { id: winnerId }, data: { balance: { increment: prize } } }),
+      prisma.transaction.create({
+        data: { userId: winnerId, amount: prize, type: 'SALE', description: `🏆 Battle won — 🪙${prize} (wager + opponent's cards)` },
+      }),
     ])
   } else {
     await prisma.battle.update({ where: { id }, data: finalUpdate })

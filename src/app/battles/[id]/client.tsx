@@ -104,12 +104,14 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
           <h1 className="font-display text-3xl md:text-4xl text-white tracking-wide">{battle.case.name}</h1>
           <p className="text-slate-400 text-sm mt-1">{STATUS_LABEL[battle.status]}</p>
         </div>
-        {battle.wager > 0 && (
-          <div className="text-center glass rounded-2xl border border-yellow-400/20 px-6 py-3">
-            <div className="font-display text-3xl text-yellow-400">{formatCurrency(battle.wager * 2)}</div>
-            <div className="text-xs font-mono text-slate-500 mt-0.5">PRIZE POOL</div>
+        <div className="text-center glass rounded-2xl border border-yellow-400/20 px-6 py-3">
+          <div className="font-display text-3xl text-yellow-400">
+            {battle.creatorValue !== null && battle.joinerValue !== null
+              ? formatCurrency((battle.wager * 2) + Math.min(battle.creatorValue ?? 0, battle.joinerValue ?? 0))
+              : battle.wager > 0 ? formatCurrency(battle.wager * 2) + '+' : 'Cards'}
           </div>
-        )}
+          <div className="text-xs font-mono text-slate-500 mt-0.5">WINNER GETS</div>
+        </div>
       </div>
 
       {/* WAITING state */}
@@ -221,7 +223,11 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
             <>
               <Trophy size={40} className="text-yellow-400 mx-auto mb-3" />
               <p className="font-display text-3xl text-yellow-400 tracking-wide mb-1">YOU WIN!</p>
-              {battle.wager > 0 && <p className="text-slate-300 text-sm">🪙 {(battle.wager * 2).toLocaleString()} tokens added to your balance</p>}
+              {(() => {
+                const loserVal = isCreator ? (battle.joinerValue ?? 0) : (battle.creatorValue ?? 0)
+                const prize = (battle.wager * 2) + loserVal
+                return <p className="text-slate-300 text-sm">{formatCurrency(prize)} added to your balance — wager + opponent's cards</p>
+              })()}
             </>
           ) : (
             <>
