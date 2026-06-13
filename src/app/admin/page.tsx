@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette } from 'lucide-react'
+import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette, Swords } from 'lucide-react'
 import { SeedBotsButton } from './seed-bots-button'
 
 async function getAdminData() {
@@ -29,6 +29,8 @@ async function getAdminData() {
     revenueThisWeek, revenueLastWeek,
     pendingWithdrawals,
     recentOpenings,
+    openBattles,
+    completedBattles,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.caseOpening.count(),
@@ -53,6 +55,8 @@ async function getAdminData() {
       where: { createdAt: { gte: last14Days[0] } },
       select: { createdAt: true },
     }),
+    prisma.battle.count({ where: { status: 'WAITING' } }),
+    prisma.battle.count({ where: { status: 'COMPLETE' } }),
   ])
 
   // Bucket openings into 14 daily slots
@@ -74,6 +78,8 @@ async function getAdminData() {
     revenueLastWeek: revenueLastWeek._sum.amount ?? 0,
     pendingWithdrawals,
     openingsByDay,
+    openBattles,
+    completedBattles,
   }
 }
 
@@ -200,6 +206,27 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      {/* Battles */}
+      <div className="glass rounded-2xl border border-white/5 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-display text-2xl text-white tracking-wide flex items-center gap-2 mb-1">
+              <Swords size={20} className="text-yellow-400" /> BATTLES
+            </h2>
+            <p className="text-xs font-mono text-slate-500">
+              <span className="text-white">{data.openBattles}</span> open &nbsp;·&nbsp;
+              <span className="text-white">{data.completedBattles}</span> completed
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/battles" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy-700 border border-white/10 text-slate-300 hover:text-white text-sm font-display tracking-wider transition-colors">
+              View Lobby
+            </Link>
+            <SeedBotsButton />
+          </div>
+        </div>
+      </div>
+
       {/* Cases management */}
       <div className="glass rounded-2xl border border-white/5 p-6">
         <div className="flex items-center justify-between mb-6">
@@ -238,7 +265,6 @@ export default async function AdminPage() {
             >
               <Share2 size={14} /> Social
             </Link>
-            <SeedBotsButton />
             <Link
               href="/admin/cases/new"
               className="btn-gold px-4 py-2 rounded-xl text-sm font-display tracking-wider"
