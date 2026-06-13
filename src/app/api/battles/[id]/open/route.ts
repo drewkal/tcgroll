@@ -47,16 +47,15 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (bothDone) {
     const creatorValue = isCreator ? totalValue : (updatedBattle?.creatorValue ?? 0)
     const joinerValue  = isJoiner  ? totalValue : (updatedBattle?.joinerValue  ?? 0)
-    const winnerId     = creatorValue >= joinerValue ? battle.creatorId : battle.joinerId!
-    const loserId      = winnerId === battle.creatorId ? battle.joinerId! : battle.creatorId
-    const loserValue   = winnerId === battle.creatorId ? joinerValue : creatorValue
-    const prize        = (battle.wager * 2) + loserValue
+    const winnerId = creatorValue >= joinerValue ? battle.creatorId : battle.joinerId!
+    const loserId  = winnerId === battle.creatorId ? battle.joinerId! : battle.creatorId
+    const prize    = battle.wager * 2
 
     finalUpdate = { ...finalUpdate, status: 'COMPLETE', winnerId }
 
-    // Get loser's userCardIds (stored from their opening, or current player's if loser = current player)
+    // Get loser's userCardIds to transfer to winner
     const loserUserCardIds: string[] = isCreator && winnerId !== battle.creatorId
-      ? userCardIds  // current player is the loser
+      ? userCardIds
       : isJoiner && winnerId !== battle.joinerId
       ? userCardIds
       : ((winnerId === battle.creatorId
@@ -65,16 +64,18 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     await prisma.$transaction([
       prisma.battle.update({ where: { id }, data: finalUpdate }),
-      // Winner gets prize tokens
-      prisma.user.update({ where: { id: winnerId }, data: { balance: { increment: prize } } }),
-      prisma.transaction.create({
-        data: { userId: winnerId, amount: prize, type: 'SALE', description: `🏆 Battle won — 🪙${prize}` },
-      }),
-      // Loser's cards are removed from their collection
+      // Winner gets both wagers back
+      ...(prize > 0 ? [
+        prisma.user.update({ where: { id: winnerId }, data: { balance: { increment: prize } } }),
+        prisma.transaction.create({
+          data: { userId: winnerId, amount: prize, type: 'SALE', description: `🏆 Battle won — 🪙${prize} wager` },
+        }),
+      ] : []),
+      // Transfer loser's cards to winner
       ...(loserUserCardIds.length > 0 ? [
         prisma.userCard.updateMany({
           where: { id: { in: loserUserCardIds }, userId: loserId },
-          data:  { sold: true, soldAt: new Date() },
+          data:  { userId: winnerId },
         }),
       ] : []),
     ])

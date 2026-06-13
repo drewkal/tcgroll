@@ -144,8 +144,6 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   }
 
   const isFetching = me.phase === 'fetching'
-  const isSpinning = me.phase === 'spinning' || me.phase === 'revealing' || me.phase === 'fetching'
-    || opp.phase === 'spinning' || opp.phase === 'revealing'
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
@@ -326,11 +324,10 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
             <>
               <Trophy size={40} className="text-yellow-400 mx-auto mb-3" />
               <p className="font-display text-3xl text-yellow-400 tracking-wide mb-1">YOU WIN!</p>
-              {(() => {
-                const loserVal = isCreator ? (battle.joinerValue ?? 0) : (battle.creatorValue ?? 0)
-                const prize = (battle.wager * 2) + loserVal
-                return <p className="text-slate-300 text-sm">{formatCurrency(prize)} added to your balance</p>
-              })()}
+              <p className="text-slate-300 text-sm">
+                Both players' cards added to your collection
+                {battle.wager > 0 && ` + ${formatCurrency(battle.wager * 2)} wager returned`}
+              </p>
             </>
           ) : (
             <>
