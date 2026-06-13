@@ -53,13 +53,18 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   const iWon          = battle.winnerId === session?.user?.id
   const hasOpened     = !!myCards || spinPhase !== 'idle'
 
+  // Merge incoming battle data but always preserve caseCards from initial state
+  const mergeBattle = useCallback((data: Partial<Battle>) => {
+    setBattle(prev => ({ ...prev, ...data, case: { ...prev.case, ...data.case, caseCards: prev.case.caseCards } }))
+  }, [])
+
   // Poll for updates while battle is active
   const poll = useCallback(async () => {
     try {
       const res = await fetch(`/api/battles/${battle.id}`)
-      if (res.ok) setBattle(await res.json())
+      if (res.ok) mergeBattle(await res.json())
     } catch {}
-  }, [battle.id])
+  }, [battle.id, mergeBattle])
 
   useEffect(() => {
     if (battle.status === 'COMPLETE' || battle.status === 'CANCELLED' || battle.status === 'EXPIRED') return
@@ -77,7 +82,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
       setWinningCards(data.myCards ?? [])
       setSpinIndex(0)
       setSpinPhase('spinning')
-      setBattle(data)
+      mergeBattle(data)
     } catch {
       toast.error('Something went wrong'); setSpinPhase('idle')
     }
