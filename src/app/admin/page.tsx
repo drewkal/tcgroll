@@ -7,6 +7,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette, Swords } from 'lucide-react'
 import { SeedBotsButton } from './seed-bots-button'
+import { EditBalanceButton } from './edit-balance-button'
 
 async function getAdminData() {
   const now = new Date()
@@ -329,7 +330,10 @@ export default async function AdminPage() {
                 <tr key={u.id} className="hover:bg-white/2 transition-colors">
                   <td className="py-3 pr-4 text-white font-medium">{u.name ?? '—'}</td>
                   <td className="py-3 pr-4 text-slate-400 font-mono text-xs">{u.email}</td>
-                  <td className="py-3 pr-4 font-mono text-yellow-400">{formatCurrency(u.balance)}</td>
+                  <td className="py-3 pr-4 font-mono text-yellow-400">
+                    {formatCurrency(u.balance)}
+                    <EditBalanceButton userId={u.id} name={u.name} currentBalance={u.balance} />
+                  </td>
                   <td className="py-3 pr-4">
                     <span className={`rarity-badge ${u.role === 'ADMIN' ? 'bg-yellow-400/20 text-yellow-400' : 'bg-blue-500/20 text-blue-400'}`}>
                       {u.role}
