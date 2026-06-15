@@ -27,13 +27,17 @@ const SEED: TickerPull[] = [
 ]
 
 function merge(live: TickerPull[]): TickerPull[] {
+  // Interleave live pulls with seed so the ticker always looks varied
   const out: TickerPull[] = []
   const seen = new Set<string>()
-  for (const p of [...live, ...SEED]) {
+  let li = 0, si = 0
+  while (out.length < 30 && (li < live.length || si < SEED.length)) {
+    // Every 2 live entries, insert 1 seed entry
+    const takeLive = li < live.length && (si >= SEED.length || li % 3 !== 2)
+    const p = takeLive ? live[li++] : SEED[si++ % SEED.length]
     if (!seen.has(p.id)) { seen.add(p.id); out.push(p) }
-    if (out.length >= 30) break
   }
-  return out
+  return out.length > 0 ? out : SEED
 }
 
 export function RecentPullsTicker() {

@@ -4,8 +4,12 @@ import { prisma } from '@/lib/prisma'
 export const revalidate = 30
 
 export async function GET() {
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
   const rows = await prisma.openingCard.findMany({
-    where: { card: { rarity: { in: ['EPIC', 'LEGENDARY'] } } },
+    where: {
+      card: { rarity: { in: ['EPIC', 'LEGENDARY'] } },
+      opening: { createdAt: { gte: since } },
+    },
     include: {
       card: { select: { name: true, rarity: true, imageUrl: true } },
       opening: {
@@ -16,7 +20,7 @@ export async function GET() {
       },
     },
     orderBy: { opening: { createdAt: 'desc' } },
-    take: 30,
+    take: 15,
   })
 
   const pulls = rows
