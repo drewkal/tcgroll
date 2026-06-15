@@ -28,7 +28,7 @@ export function VerifyEmailBanner() {
         <MailCheck size={15} className="text-yellow-400 flex-shrink-0" />
         <span className="text-slate-300 truncate">
           Verify your email to claim{' '}
-          <span className="text-yellow-400 font-semibold">🪙 750 free tokens</span>
+          <span className="text-yellow-400 font-semibold">🪙 500 free tokens</span>
         </span>
         <button
           onClick={resend}

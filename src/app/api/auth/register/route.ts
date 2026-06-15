@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const base = process.env.AUTH_URL ?? 'https://tcgroll.com'
     await sendEmail({
       to: email,
-      subject: '📬 Verify your TCGRoll email — claim 🪙 750 free tokens',
+      subject: '📬 Verify your TCGRoll email — claim 🪙 500 free tokens',
       html: verifyEmailTemplate({ name, verifyUrl: `${base}/api/auth/verify-email?token=${verifyToken}` }),
     })
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    return NextResponse.json({ success: true, message: 'Account created! Check your email to claim 🪙 750 free tokens.' })
+    return NextResponse.json({ success: true, message: 'Account created! Check your email to claim 🪙 500 free tokens.' })
   } catch (error) {
     console.error('Register error:', error)
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })

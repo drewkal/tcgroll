@@ -88,7 +88,7 @@ export default function RegisterPage() {
             <Zap size={28} className="text-black fill-black" />
           </div>
           <h1 className="font-display text-4xl tracking-wide text-white">JOIN TCGROLL</h1>
-          <p className="text-slate-400 text-sm mt-2">Create your account and verify your email to receive <span className="text-yellow-400 font-semibold">🪙 750 free tokens</span></p>
+          <p className="text-slate-400 text-sm mt-2">Create your account and verify your email to receive <span className="text-yellow-400 font-semibold">🪙 500 free tokens</span></p>
         </div>
 
         <div className="glass rounded-2xl border border-white/5 p-8 space-y-5">
