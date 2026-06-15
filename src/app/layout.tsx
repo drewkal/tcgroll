@@ -76,6 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           gtag('config', 'G-9922Z4W1VB');
           gtag('config', 'AW-737826355');
         `}</Script>
+        <Script async src="https://analytics.ahrefs.com/analytics.js" data-key="Wn2Ym89Ku+/S5gfuYlOg5w" strategy="afterInteractive" />
       </head>
       <body className="mesh-bg min-h-screen">
         <noscript>
