@@ -2,23 +2,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { Swords, Copy, Zap, Loader2, Trophy, Clock, RotateCcw, ChevronLeft } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import { CardDisplay } from '@/components/cards/card-display'
 import { SpinReel, Celebration } from '@/components/case-reel'
+import { TiebreakerReel } from '@/components/tiebreaker'
 import { Card } from '@prisma/client'
 
 type CaseCard = { card: Card; dropRate: number }
 type CardSummary = { id: string; name: string; rarity: string; value: number; imageUrl: string | null }
 type Battle = {
-  id: string; status: string; wager: number; winnerId: string | null
-  creatorId: string; creator: { id: string; name: string | null }
+  id: string; status: string; wager: number; winnerId: string | null; tiebroken: boolean
+  creatorId: string; creator: { id: string; name: string | null; image: string | null }
   creatorValue: number | null; creatorCards: CardSummary[] | null
-  joinerId: string | null; joiner: { id: string; name: string | null } | null
+  joinerId: string | null; joiner: { id: string; name: string | null; image: string | null } | null
   joinerValue: number | null; joinerCards: CardSummary[] | null
-  case: { id: string; name: string; price: number; game: string; slug: string; caseCards: CaseCard[] }
+  case: { id: string; name: string; price: number; game: string; slug: string; imageUrl: string | null; caseCards: CaseCard[] }
   expiresAt: string
 }
 
@@ -74,7 +76,10 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
 
   const me  = useSpinner()
   const opp = useSpinner()
-  const oppSeenRef = useRef(false)
+  const oppSeenRef      = useRef(false)
+  const tiStartedRef    = useRef(false)
+  const [tieBreakerActive, setTieBreakerActive] = useState(false)
+  const [tieBreakerDone,   setTieBreakerDone]   = useState(false)
 
   const isCreator     = session?.user?.id === battle.creatorId
   const isJoiner      = session?.user?.id === battle.joinerId
@@ -85,9 +90,17 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   const iWon          = battle.winnerId === session?.user?.id
   const hasOpened     = !!myCards || me.phase !== 'idle'
 
-  // Show results only after both spinners complete (or if loading an already-complete battle)
-  const canShowResults = (me.phase === 'done' && opp.phase === 'done') ||
-    (me.phase === 'idle' && opp.phase === 'idle' && battle.status === 'COMPLETE')
+  const bothSpinsDone = me.phase === 'done' && opp.phase === 'done'
+  const loadedComplete = me.phase === 'idle' && opp.phase === 'idle' && battle.status === 'COMPLETE'
+
+  // When both main spins finish on a tie, show the tiebreaker player reel
+  useEffect(() => {
+    if (!bothSpinsDone || !battle.tiebroken || !battle.winnerId || tiStartedRef.current) return
+    tiStartedRef.current = true
+    setTimeout(() => setTieBreakerActive(true), 800)
+  }, [bothSpinsDone, battle.tiebroken, battle.winnerId])
+
+  const canShowResults = loadedComplete || (battle.tiebroken ? tieBreakerDone : bothSpinsDone)
 
   const mergeBattle = useCallback((data: Partial<Battle>) => {
     setBattle(prev => ({ ...prev, ...data, case: { ...prev.case, ...data.case, caseCards: prev.case.caseCards } }))
@@ -146,10 +159,16 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
   const isFetching = me.phase === 'fetching'
 
   return (
+    <>
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <Link href="/battles" className="inline-flex items-center gap-2 text-slate-400 hover:text-yellow-400 transition-colors mb-8 text-sm font-mono">
-        <ChevronLeft size={16} /> All Battles
-      </Link>
+      <div className="flex items-center gap-4 mb-8">
+        <Link href="/battles" className="inline-flex items-center gap-2 text-slate-400 hover:text-yellow-400 transition-colors text-sm font-mono">
+          <ChevronLeft size={16} /> All Battles
+        </Link>
+        {battle.case.imageUrl && (
+          <Image src={battle.case.imageUrl} alt={battle.case.name} width={32} height={32} className="object-contain" />
+        )}
+      </div>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -293,6 +312,23 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
         </div>
       )}
 
+      {/* Tiebreaker player reel */}
+      {tieBreakerActive && !tieBreakerDone && battle.winnerId && battle.joiner && (
+        <div className="glass rounded-2xl border border-yellow-400/20 p-5 mb-5">
+          <div className="text-center mb-4">
+            <p className="font-display text-yellow-400 text-xl tracking-widest animate-pulse">IT'S A TIE — TIEBREAKER!</p>
+            <p className="text-slate-500 text-xs font-mono mt-1">One more spin to decide the winner</p>
+          </div>
+          <TiebreakerReel
+            creator={battle.creator}
+            joiner={battle.joiner}
+            winnerId={battle.winnerId}
+            creatorId={battle.creatorId}
+            onComplete={() => setTieBreakerDone(true)}
+          />
+        </div>
+      )}
+
       {/* Open button */}
       {battle.status === 'READY' && isParticipant && !hasOpened && me.phase === 'idle' && (
         <button
@@ -351,5 +387,7 @@ export function BattleRoomClient({ initialBattle }: { initialBattle: Battle }) {
         </div>
       )}
     </div>
+
+</>
   )
 }

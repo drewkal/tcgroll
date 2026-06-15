@@ -9,8 +9,8 @@ export default async function BattlePage({ params }: { params: Promise<{ id: str
   const battle = await prisma.battle.findUnique({
     where: { id },
     include: {
-      creator: { select: { id: true, name: true } },
-      joiner:  { select: { id: true, name: true } },
+      creator: { select: { id: true, name: true, image: true } },
+      joiner:  { select: { id: true, name: true, image: true } },
       case:    {
         include: {
           caseCards: { include: { card: true }, orderBy: { card: { value: 'desc' } } },

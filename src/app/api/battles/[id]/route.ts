@@ -8,8 +8,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const battle = await prisma.battle.findUnique({
     where: { id },
     include: {
-      creator: { select: { id: true, name: true } },
-      joiner:  { select: { id: true, name: true } },
+      creator: { select: { id: true, name: true, image: true } },
+      joiner:  { select: { id: true, name: true, image: true } },
       case:    { select: { id: true, name: true, price: true, game: true, slug: true } },
     },
   })

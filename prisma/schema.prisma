@@ -328,6 +328,7 @@ model Battle {
   joinerUserCardIds  Json?
 
   winnerId     String?
+  tiebroken    Boolean      @default(false)
 
   expiresAt    DateTime
   createdAt    DateTime     @default(now())

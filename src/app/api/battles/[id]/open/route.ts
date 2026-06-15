@@ -47,11 +47,14 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (bothDone) {
     const creatorValue = isCreator ? totalValue : (updatedBattle?.creatorValue ?? 0)
     const joinerValue  = isJoiner  ? totalValue : (updatedBattle?.joinerValue  ?? 0)
-    const winnerId = creatorValue >= joinerValue ? battle.creatorId : battle.joinerId!
+    const tied     = creatorValue === joinerValue
+    const winnerId = tied
+      ? (Math.random() < 0.5 ? battle.creatorId : battle.joinerId!)
+      : (creatorValue > joinerValue ? battle.creatorId : battle.joinerId!)
     const loserId  = winnerId === battle.creatorId ? battle.joinerId! : battle.creatorId
     const prize    = battle.wager * 2
 
-    finalUpdate = { ...finalUpdate, status: 'COMPLETE', winnerId }
+    finalUpdate = { ...finalUpdate, status: 'COMPLETE', winnerId, tiebroken: tied }
 
     // Get loser's userCardIds to transfer to winner
     const loserUserCardIds: string[] = isCreator && winnerId !== battle.creatorId
@@ -86,8 +89,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const final = await prisma.battle.findUnique({
     where: { id },
     include: {
-      creator: { select: { id: true, name: true } },
-      joiner:  { select: { id: true, name: true } },
+      creator: { select: { id: true, name: true, image: true } },
+      joiner:  { select: { id: true, name: true, image: true } },
       case:    { select: { id: true, name: true, price: true, game: true, slug: true } },
     },
   })
