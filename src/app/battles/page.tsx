@@ -14,7 +14,16 @@ async function getOpenBattles() {
     where: { status: 'WAITING', expiresAt: { gt: new Date() } },
     include: {
       creator: { select: { id: true, name: true } },
-      case: { select: { id: true, name: true, price: true, game: true, slug: true, imageUrl: true } },
+      case: {
+        select: {
+          id: true, name: true, price: true, game: true, slug: true, imageUrl: true,
+          caseCards: {
+            include: { card: { select: { id: true, name: true, imageUrl: true, rarity: true, value: true, game: true } } },
+            orderBy: { dropRate: 'asc' },
+            take: 4,
+          },
+        },
+      },
     },
     orderBy: { createdAt: 'desc' },
     take: 20,
