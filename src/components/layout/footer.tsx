@@ -18,12 +18,14 @@ export async function SiteFooter({ logoUrl }: { logoUrl?: string | null }) {
           ? <Image src={logoUrl} alt="TCGRoll" width={200} height={52} className="object-contain h-11 w-auto" unoptimized />
           : <Logo size="sm" />}
 
-        <div className="flex gap-6 text-sm text-slate-500">
-          <a href="/about"   className="hover:text-yellow-400 transition-colors">About</a>
-          <a href="/terms"   className="hover:text-yellow-400 transition-colors">Terms</a>
-          <a href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy</a>
-          <a href="/faq"     className="hover:text-yellow-400 transition-colors">FAQ</a>
-          <a href="/fair"    className="hover:text-yellow-400 transition-colors">Provably Fair</a>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500">
+          <a href="/about"        className="hover:text-yellow-400 transition-colors">About</a>
+          <a href="/how-it-works" className="hover:text-yellow-400 transition-colors">How It Works</a>
+          <a href="/card-quality" className="hover:text-yellow-400 transition-colors">Card Quality</a>
+          <a href="/faq"          className="hover:text-yellow-400 transition-colors">FAQ</a>
+          <a href="/fair"         className="hover:text-yellow-400 transition-colors">Provably Fair</a>
+          <a href="/terms"        className="hover:text-yellow-400 transition-colors">Terms</a>
+          <a href="/privacy"      className="hover:text-yellow-400 transition-colors">Privacy</a>
         </div>
 
         <SocialLinks links={socialLinks} />
