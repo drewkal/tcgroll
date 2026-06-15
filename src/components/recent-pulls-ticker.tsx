@@ -11,45 +11,33 @@ export type TickerPull = {
   imageUrl: string | null
 }
 
-const SEED: TickerPull[] = [
-  { id: 's1',  user: 'TrainerRed',   card: 'Charizard ex',            rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
-  { id: 's2',  user: 'LuffyFan99',   card: 'Monkey D. Luffy',         rarity: 'EPIC',      caseName: 'OP-09 Pack',     imageUrl: null },
-  { id: 's3',  user: 'DeckWizard',   card: 'Black Lotus',             rarity: 'LEGENDARY', caseName: 'Vintage Magic',  imageUrl: null },
-  { id: 's4',  user: 'SSGoku',       card: 'Ultra Instinct Goku',     rarity: 'LEGENDARY', caseName: 'DB Heroes',      imageUrl: null },
-  { id: 's5',  user: 'PikaPro',      card: 'Pikachu VMAX',            rarity: 'EPIC',      caseName: 'Crown Zenith',   imageUrl: null },
-  { id: 's6',  user: 'SpellCaster',  card: 'Jace, Mind Sculptor',     rarity: 'EPIC',      caseName: 'Modern Masters', imageUrl: null },
-  { id: 's7',  user: 'PokeHunter',   card: 'Mewtwo ex',               rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
-  { id: 's8',  user: 'ZoroMain',     card: 'Roronoa Zoro',            rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
-  { id: 's9',  user: 'AceTrainer',   card: 'Umbreon VMAX',            rarity: 'EPIC',      caseName: 'Crown Zenith',   imageUrl: null },
-  { id: 's10', user: 'SaiyaGod',     card: 'Gogeta Blue',             rarity: 'LEGENDARY', caseName: 'BT25 Case',      imageUrl: null },
-  { id: 's11', user: 'ReelMaster',   card: 'Rayquaza VMAX',           rarity: 'LEGENDARY', caseName: 'Paldea Elite',   imageUrl: null },
-  { id: 's12', user: 'SnapperX',     card: 'Boa Hancock',             rarity: 'EPIC',      caseName: 'OP-08 Pack',     imageUrl: null },
-]
-
-function merge(live: TickerPull[]): TickerPull[] {
-  // Interleave live pulls with seed so the ticker always looks varied
+function merge(live: TickerPull[], seed: TickerPull[]): TickerPull[] {
+  if (seed.length === 0 && live.length === 0) return []
   const out: TickerPull[] = []
   const seen = new Set<string>()
   let li = 0, si = 0
-  while (out.length < 30 && (li < live.length || si < SEED.length)) {
-    // Every 2 live entries, insert 1 seed entry
-    const takeLive = li < live.length && (si >= SEED.length || li % 3 !== 2)
-    const p = takeLive ? live[li++] : SEED[si++ % SEED.length]
-    if (!seen.has(p.id)) { seen.add(p.id); out.push(p) }
+  while (out.length < 30 && (li < live.length || si < seed.length)) {
+    const takeLive = li < live.length && (si >= seed.length || li % 3 !== 2)
+    const p = takeLive ? live[li++] : seed[si++ % Math.max(seed.length, 1)]
+    if (p && !seen.has(p.id)) { seen.add(p.id); out.push(p) }
   }
-  return out.length > 0 ? out : SEED
+  return out
 }
 
 export function RecentPullsTicker() {
-  const [pulls, setPulls] = useState<TickerPull[]>(SEED)
+  const [pulls, setPulls] = useState<TickerPull[]>([])
 
   useEffect(() => {
     fetch('/api/recent-pulls')
-      .then(r => r.ok ? r.json() : [])
-      .then((live: TickerPull[]) => setPulls(merge(live)))
+      .then(r => r.ok ? r.json() : { live: [], seed: [] })
+      .then(({ live, seed }: { live: TickerPull[]; seed: TickerPull[] }) => {
+        const merged = merge(live, seed)
+        if (merged.length > 0) setPulls(merged)
+      })
       .catch(() => {})
   }, [])
 
+  if (pulls.length === 0) return null
   const items = [...pulls, ...pulls]
 
   return (
