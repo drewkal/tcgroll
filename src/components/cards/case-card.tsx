@@ -151,7 +151,7 @@ export function CaseCard({ cardCase, topCards = [], featured }: CaseCardProps) {
                     }}>
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}, ${color}80)`, zIndex: 2 }} />
                       {card.imageUrl ? (
-                        <img src={card.imageUrl} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={card.imageUrl} alt={card.name} width={54} height={76} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         <div style={{
                           width: '100%', height: '100%',

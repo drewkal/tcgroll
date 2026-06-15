@@ -65,7 +65,7 @@ export function HeroVisual({ cards }: { cards: HeroCard[] }) {
                 {/* rarity top stripe */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color, zIndex: 1 }} />
                 {card.imageUrl ? (
-                  <img src={card.imageUrl} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={card.imageUrl} alt={card.name} width={88} height={120} loading="eager" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <div style={{
                     width: '100%', height: '100%',

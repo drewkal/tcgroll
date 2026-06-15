@@ -198,7 +198,7 @@ export function BattleLobbyClient({ battles, cases }: { battles: (Battle & { exp
                             <div key={card.id} style={{ transform: `rotate(${slot.rotate}deg) translateY(${slot.y}px)`, filter: `drop-shadow(0 0 6px ${cardColor}60)` }}>
                               <div style={{ width: 38, height: 54, borderRadius: 6, overflow: 'hidden', border: `1.5px solid ${cardColor}80`, background: '#080c18' }}>
                                 {card.imageUrl
-                                  ? <img src={card.imageUrl} alt={card.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  ? <img src={card.imageUrl} alt={card.name} width={38} height={54} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                   : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, background: `linear-gradient(135deg, ${cardColor}25, #080c18)` }}>{GAME_EMOJI[card.game] ?? '🃏'}</div>
                                 }
                               </div>

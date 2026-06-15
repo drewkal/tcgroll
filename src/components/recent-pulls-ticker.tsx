@@ -48,7 +48,7 @@ export function RecentPullsTicker() {
         style={{ background: 'linear-gradient(to left, #080c18 0%, transparent 100%)' }} />
 
       <div
-        className="flex gap-5 items-center"
+        className="flex gap-5 items-center ticker-strip"
         style={{
           animation: `ticker-scroll ${pulls.length * 4}s linear infinite`,
           width: 'max-content',
@@ -73,7 +73,7 @@ export function RecentPullsTicker() {
                 }}
               >
                 {pull.imageUrl ? (
-                  <img src={pull.imageUrl} alt={pull.card} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={pull.imageUrl} alt={pull.card} width={36} height={50} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] font-mono text-center leading-tight px-0.5" style={{ color: color + 'aa' }}>
                     {pull.card.slice(0, 6)}
@@ -96,6 +96,9 @@ export function RecentPullsTicker() {
         @keyframes ticker-scroll {
           from { transform: translateX(0); }
           to   { transform: translateX(-50%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ticker-strip { animation: none !important; }
         }
       `}</style>
     </div>
