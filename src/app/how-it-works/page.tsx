@@ -31,7 +31,7 @@ const STEPS = [
     title: 'Build Your Collection',
     color: '#34d399',
     desc: 'Every card you pull lands in your collection. Keep the ones you love, sell duplicates back for tokens, or trade with other players on the Exchange.',
-    bullets: ['All won cards stored in your collection', 'Sell cards instantly for token value', 'Trade with other players via Exchange'],
+    bullets: ['All won cards stored in your collection', 'Sell cards instantly for token value', 'Exchange unwanted cards for the ones you actually want'],
   },
   {
     number: '04',
