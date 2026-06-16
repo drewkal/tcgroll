@@ -15,7 +15,7 @@ const STEPS = [
     title: 'Get Your Tokens',
     color: '#fbbf24',
     desc: 'Sign up and instantly receive 500 free tokens to get started. Top up anytime by depositing — tokens are the currency used to open cases on TCGRoll.',
-    bullets: ['500 free tokens on email verification', 'Top up via card, PayPal, or crypto', '1 token = £0.01'],
+    bullets: ['500 free tokens on email verification', 'Top up securely via Stripe', '1 token = $0.01'],
   },
   {
     number: '02',
