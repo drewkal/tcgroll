@@ -30,6 +30,9 @@ export async function SiteFooter({ logoUrl }: { logoUrl?: string | null }) {
 
         <SocialLinks links={socialLinks} />
       </div>
+      <div className="max-w-7xl mx-auto px-4 mt-6 pt-6 border-t border-white/5 text-center text-xs text-slate-600">
+        © {new Date().getFullYear()} TCGRoll. All rights reserved. TCGRoll is not affiliated with, endorsed by, or sponsored by Pokémon, Nintendo, Konami, Wizards of the Coast, Bandai, or any other card publisher.
+      </div>
     </footer>
   )
 }
