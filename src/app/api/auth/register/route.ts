@@ -21,11 +21,20 @@ async function uniqueReferralCode(name: string): Promise<string> {
   return randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
 }
 
+function getIp(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-real-ip') ??
+    '0.0.0.0'
+  )
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const email = (body.email as string)?.toLowerCase().trim()
     const { password, name, referralCode: refCode } = body
+    const ip = getIp(req)
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -51,7 +60,7 @@ export async function POST(req: NextRequest) {
     const myReferralCode = await uniqueReferralCode(name)
 
     await prisma.user.create({
-      data: { email, password: hashedPassword, name, balance: 0, referralCode: myReferralCode, referredById },
+      data: { email, password: hashedPassword, name, balance: 0, referralCode: myReferralCode, referredById, registrationIp: ip },
     })
 
     // Send verification email — tokens are awarded on verification

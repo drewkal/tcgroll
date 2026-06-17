@@ -27,15 +27,26 @@ export async function GET(req: NextRequest) {
       data: { userId: user.id, amount: 500, type: 'DEPOSIT', description: '🪙 500 welcome bonus!' },
     })
 
-    // Referral bonus: pay referrer +500 tokens when their referred user verifies
+    // Referral bonus: only pay if referrer exists and IPs differ
     if (user.referredById) {
-      await prisma.user.update({
+      const referrer = await prisma.user.findUnique({
         where: { id: user.referredById },
-        data: { balance: { increment: 500 } },
+        select: { registrationIp: true },
       })
-      await prisma.transaction.create({
-        data: { userId: user.referredById, amount: 500, type: 'DEPOSIT', description: `🎉 Referral bonus — ${user.name ?? user.email} joined!` },
-      })
+      const sameIp =
+        referrer?.registrationIp &&
+        user.registrationIp &&
+        referrer.registrationIp === user.registrationIp
+
+      if (!sameIp) {
+        await prisma.user.update({
+          where: { id: user.referredById },
+          data: { balance: { increment: 500 } },
+        })
+        await prisma.transaction.create({
+          data: { userId: user.referredById, amount: 500, type: 'DEPOSIT', description: `🎉 Referral bonus — ${user.name ?? user.email} joined!` },
+        })
+      }
     }
   }
 

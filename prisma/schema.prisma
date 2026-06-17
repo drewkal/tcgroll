@@ -18,9 +18,10 @@ model User {
   password      String?
   balance       Float     @default(0)
   role          Role      @default(USER)
-  referralCode  String?   @unique
-  referredById  String?
-  createdAt     DateTime  @default(now())
+  referralCode    String?   @unique
+  referredById    String?
+  registrationIp  String?
+  createdAt       DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   accounts           Account[]
