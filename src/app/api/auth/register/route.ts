@@ -49,6 +49,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
     }
 
+    // Block more than 3 accounts from the same IP
+    if (ip !== '0.0.0.0') {
+      const ipCount = await prisma.user.count({ where: { registrationIp: ip } })
+      if (ipCount >= 3) {
+        return NextResponse.json({ error: 'Too many accounts registered from this network. Contact support if this is a mistake.' }, { status: 429 })
+      }
+    }
+
     // Look up referrer
     let referredById: string | undefined
     if (refCode) {
