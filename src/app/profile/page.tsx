@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink, Settings, Eye, EyeOff, Check } from 'lucide-react'
+import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink, Settings, Eye, EyeOff, Check, Gift, Copy, CheckCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import Link from 'next/link'
@@ -56,6 +56,13 @@ function DepositToast() {
   return null
 }
 
+type ReferralStats = {
+  referralCode: string | null
+  referrals: { id: string; name: string | null; createdAt: string; emailVerified: string | null }[]
+  verifiedCount: number
+  tokensEarned: number
+}
+
 function ProfilePageInner() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -65,6 +72,8 @@ function ProfilePageInner() {
   const [loading, setLoading] = useState(true)
   const [expandedOpening, setExpandedOpening] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [referralStats, setReferralStats] = useState<ReferralStats | null>(null)
+  const [copied, setCopied] = useState(false)
 
   // Name form
   const [nameValue, setNameValue] = useState('')
@@ -133,6 +142,10 @@ function ProfilePageInner() {
       })
       .catch(() => toast.error('Failed to load stats'))
       .finally(() => setLoading(false))
+    fetch('/api/user/referrals')
+      .then(r => r.json())
+      .then(setReferralStats)
+      .catch(() => {})
   }, [session])
 
   if (status === 'loading' || loading) {
@@ -422,6 +435,66 @@ function ProfilePageInner() {
           <Zap size={16} fill="black" /> Buy Tokens
         </Link>
       </div>
+
+      {/* Referral section */}
+      {referralStats && (
+        <div className="glass rounded-2xl border border-white/5 p-6 space-y-5">
+          <div className="flex items-center gap-3">
+            <Gift size={20} className="text-yellow-400" />
+            <h2 className="font-display text-2xl text-white tracking-wide">REFER A FRIEND</h2>
+          </div>
+          <p className="text-slate-400 text-sm">Share your link — you earn <span className="text-yellow-400 font-semibold">🪙 500 tokens</span> every time someone signs up and verifies their email.</p>
+
+          {/* Link + copy */}
+          {referralStats.referralCode ? (
+            <div className="flex gap-2">
+              <div className="flex-1 bg-navy-800 border border-white/10 rounded-xl px-4 py-2.5 text-slate-300 text-sm font-mono truncate select-all">
+                {typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${referralStats.referralCode}` : `/register?ref=${referralStats.referralCode}`}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/register?ref=${referralStats.referralCode}`)
+                  setCopied(true)
+                  toast.success('Link copied!')
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="btn-gold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 flex-shrink-0"
+              >
+                {copied ? <CheckCheck size={14} /> : <Copy size={14} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          ) : (
+            <p className="text-slate-500 text-sm">Referral code not yet generated — try logging out and back in.</p>
+          )}
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-xl border border-white/5 p-4 text-center">
+              <div className="font-display text-3xl text-white">{referralStats.verifiedCount}</div>
+              <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">FRIENDS JOINED</div>
+            </div>
+            <div className="rounded-xl border border-white/5 p-4 text-center">
+              <div className="font-display text-3xl text-yellow-400">{referralStats.tokensEarned.toLocaleString()}</div>
+              <div className="text-xs font-mono text-slate-500 tracking-wider mt-1">TOKENS EARNED</div>
+            </div>
+          </div>
+
+          {/* Referral list */}
+          {referralStats.referrals.length > 0 && (
+            <div className="space-y-1 pt-1 border-t border-white/5">
+              {referralStats.referrals.map(r => (
+                <div key={r.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/3 transition-colors">
+                  <div className="text-sm text-white">{r.name ?? 'Unknown'}</div>
+                  <div className={cn('text-xs font-mono', r.emailVerified ? 'text-green-400' : 'text-slate-500')}>
+                    {r.emailVerified ? `+500 earned` : 'pending verification'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Transaction history */}
       <div className="glass rounded-2xl border border-white/5 p-6">

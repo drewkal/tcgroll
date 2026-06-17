@@ -8,6 +8,21 @@ import { prisma } from '@/lib/prisma'
 import { authConfig } from './auth.config'
 import { sendEmail } from '@/lib/email'
 import { welcomeEmail } from '@/emails/welcome'
+import { randomUUID } from 'crypto'
+
+function genRefCode(name: string | null | undefined): string {
+  const base = (name ?? 'USER').replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X')
+  return base + Math.random().toString(36).substring(2, 6).toUpperCase()
+}
+
+async function uniqueRefCode(name: string | null | undefined): Promise<string> {
+  for (let i = 0; i < 10; i++) {
+    const code = genRefCode(name)
+    const existing = await prisma.user.findUnique({ where: { referralCode: code } })
+    if (!existing) return code
+  }
+  return randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -56,7 +71,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async createUser({ user }) {
       if (!user.id) return
-      await prisma.user.update({ where: { id: user.id }, data: { balance: 500 } })
+      const referralCode = await uniqueRefCode(user.name)
+      await prisma.user.update({ where: { id: user.id }, data: { balance: 500, referralCode } })
       await prisma.transaction.create({
         data: { userId: user.id, amount: 500, type: 'DEPOSIT', description: '🪙 500 welcome bonus!' },
       })

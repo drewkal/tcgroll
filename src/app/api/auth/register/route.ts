@@ -6,11 +6,26 @@ import { sendEmail } from '@/lib/email'
 import { verifyEmailTemplate } from '@/emails/verify-email'
 import { randomUUID } from 'crypto'
 
+function generateReferralCode(name: string): string {
+  const base = name.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X')
+  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase()
+  return `${base}${suffix}`
+}
+
+async function uniqueReferralCode(name: string): Promise<string> {
+  for (let i = 0; i < 10; i++) {
+    const code = generateReferralCode(name)
+    const existing = await prisma.user.findUnique({ where: { referralCode: code } })
+    if (!existing) return code
+  }
+  return randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const email = (body.email as string)?.toLowerCase().trim()
-    const { password, name } = body
+    const { password, name, referralCode: refCode } = body
 
     if (!email || !password || !name) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -25,9 +40,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
     }
 
+    // Look up referrer
+    let referredById: string | undefined
+    if (refCode) {
+      const referrer = await prisma.user.findUnique({ where: { referralCode: refCode } })
+      if (referrer) referredById = referrer.id
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10)
+    const myReferralCode = await uniqueReferralCode(name)
+
     await prisma.user.create({
-      data: { email, password: hashedPassword, name, balance: 0 },
+      data: { email, password: hashedPassword, name, balance: 0, referralCode: myReferralCode, referredById },
     })
 
     // Send verification email — tokens are awarded on verification
