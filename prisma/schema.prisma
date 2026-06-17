@@ -37,6 +37,7 @@ model User {
   battlesJoined      Battle[]          @relation("BattleJoiner")
   referredBy         User?             @relation("Referrals", fields: [referredById], references: [id])
   referrals          User[]            @relation("Referrals")
+  chatMessages       ChatMessage[]
 }
 
 model Account {
@@ -296,6 +297,15 @@ enum WithdrawStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String   @db.VarChar(200)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SiteSetting {

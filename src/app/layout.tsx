@@ -10,6 +10,7 @@ import { getSettings } from '@/lib/settings'
 import Script from 'next/script'
 import { VerifyEmailBanner } from '@/components/verify-email-banner'
 import { CookieBanner } from '@/components/cookie-banner'
+import { ChatWidget } from '@/components/chat-widget'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tcgroll.com'),
@@ -87,6 +88,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Navbar logoUrl={logos.logo_header || null} />
           <VerifyEmailBanner />
           <main className="min-h-screen">{children}</main>
+          <ChatWidget />
           <Toaster
             position="bottom-right"
             toastOptions={{
