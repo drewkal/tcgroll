@@ -32,7 +32,7 @@ export async function GET() {
       name: true,
       referralCode: true,
       referrals: {
-        select: { id: true, name: true, createdAt: true, emailVerified: true },
+        select: { id: true, name: true, createdAt: true, emailVerified: true, referralBonusPaid: true },
         orderBy: { createdAt: 'desc' },
       },
     },

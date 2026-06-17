@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 
 type ReferralStats = {
   referralCode: string | null
-  referrals: { id: string; name: string | null; createdAt: string; emailVerified: string | null }[]
+  referrals: { id: string; name: string | null; createdAt: string; emailVerified: string | null; referralBonusPaid: boolean }[]
   verifiedCount: number
   tokensEarned: number
 }
@@ -134,8 +134,12 @@ function ReferralsInner() {
               {stats.referrals.map(r => (
                 <div key={r.id} className="flex items-center justify-between py-2.5 px-4 rounded-xl hover:bg-white/3 transition-colors">
                   <span className="text-sm text-white">{r.name ?? 'Unknown'}</span>
-                  <span className={cn('text-xs font-mono', r.emailVerified ? 'text-green-400' : 'text-slate-500')}>
-                    {r.emailVerified ? '+500 earned' : 'pending verification'}
+                  <span className={cn('text-xs font-mono',
+                    !r.emailVerified ? 'text-slate-500' :
+                    r.referralBonusPaid ? 'text-green-400' : 'text-orange-400'
+                  )}>
+                    {!r.emailVerified ? 'pending verification' :
+                     r.referralBonusPaid ? '+500 earned' : 'not eligible — same network'}
                   </span>
                 </div>
               ))}

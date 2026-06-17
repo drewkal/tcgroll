@@ -46,6 +46,10 @@ export async function GET(req: NextRequest) {
         await prisma.transaction.create({
           data: { userId: user.referredById, amount: 500, type: 'DEPOSIT', description: `🎉 Referral bonus — ${user.name ?? user.email} joined!` },
         })
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { referralBonusPaid: true },
+        })
       }
     }
   }

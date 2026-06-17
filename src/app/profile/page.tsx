@@ -58,7 +58,7 @@ function DepositToast() {
 
 type ReferralStats = {
   referralCode: string | null
-  referrals: { id: string; name: string | null; createdAt: string; emailVerified: string | null }[]
+  referrals: { id: string; name: string | null; createdAt: string; emailVerified: string | null; referralBonusPaid: boolean }[]
   verifiedCount: number
   tokensEarned: number
 }
@@ -486,8 +486,12 @@ function ProfilePageInner() {
               {referralStats.referrals.map(r => (
                 <div key={r.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/3 transition-colors">
                   <div className="text-sm text-white">{r.name ?? 'Unknown'}</div>
-                  <div className={cn('text-xs font-mono', r.emailVerified ? 'text-green-400' : 'text-slate-500')}>
-                    {r.emailVerified ? `+500 earned` : 'pending verification'}
+                  <div className={cn('text-xs font-mono',
+                    !r.emailVerified ? 'text-slate-500' :
+                    r.referralBonusPaid ? 'text-green-400' : 'text-orange-400'
+                  )}>
+                    {!r.emailVerified ? 'pending verification' :
+                     r.referralBonusPaid ? '+500 earned' : 'not eligible — same network'}
                   </div>
                 </div>
               ))}
