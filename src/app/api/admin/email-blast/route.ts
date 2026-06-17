@@ -3,10 +3,16 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { Resend } from 'resend'
 import { referralBlastEmail } from '@/emails/referral-blast'
+import { randomUUID } from 'crypto'
 
 const FROM = process.env.EMAIL_FROM ?? 'TCGRoll <noreply@tcgroll.com>'
 const BASE = process.env.AUTH_URL ?? 'https://tcgroll.com'
-const BATCH = 50 // Resend batch limit per call
+const BATCH = 50
+
+function genCode(name: string | null): string {
+  const base = (name ?? 'USER').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X')
+  return base + Math.random().toString(36).substring(2, 6).toUpperCase()
+}
 
 export async function POST() {
   const session = await auth()
@@ -18,21 +24,34 @@ export async function POST() {
     return NextResponse.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 })
   }
 
-  // Only send to verified users who have a referral code
+  // All verified users (with or without referral codes)
   const users = await prisma.user.findMany({
-    where: { emailVerified: { not: null }, referralCode: { not: null } },
-    select: { email: true, name: true, referralCode: true },
+    where: { emailVerified: { not: null } },
+    select: { id: true, email: true, name: true, referralCode: true },
   })
 
   if (users.length === 0) {
-    return NextResponse.json({ sent: 0, message: 'No eligible users found' })
+    return NextResponse.json({ sent: 0, message: 'No verified users found' })
+  }
+
+  // Backfill referral codes for users who don't have one
+  const missing = users.filter(u => !u.referralCode)
+  for (const u of missing) {
+    let code = genCode(u.name)
+    // Retry on collision
+    for (let i = 0; i < 5; i++) {
+      const exists = await prisma.user.findUnique({ where: { referralCode: code } })
+      if (!exists) break
+      code = randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+    }
+    await prisma.user.update({ where: { id: u.id }, data: { referralCode: code } })
+    u.referralCode = code
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   let sent = 0
   let failed = 0
 
-  // Send in batches of BATCH
   for (let i = 0; i < users.length; i += BATCH) {
     const chunk = users.slice(i, i + BATCH)
     const emails = chunk.map(u => ({
@@ -59,7 +78,6 @@ export async function POST() {
       failed += chunk.length
     }
 
-    // Small delay between batches to avoid rate limits
     if (i + BATCH < users.length) await new Promise(r => setTimeout(r, 500))
   }
 
