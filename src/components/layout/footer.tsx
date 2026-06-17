@@ -24,6 +24,7 @@ export async function SiteFooter({ logoUrl }: { logoUrl?: string | null }) {
           <a href="/card-quality" className="hover:text-yellow-400 transition-colors">Card Quality</a>
           <a href="/faq"          className="hover:text-yellow-400 transition-colors">FAQ</a>
           <a href="/fair"         className="hover:text-yellow-400 transition-colors">Provably Fair</a>
+          <a href="/referrals"    className="hover:text-yellow-400 transition-colors">Refer a Friend</a>
           <a href="/terms"        className="hover:text-yellow-400 transition-colors">Terms</a>
           <a href="/privacy"      className="hover:text-yellow-400 transition-colors">Privacy</a>
         </div>
