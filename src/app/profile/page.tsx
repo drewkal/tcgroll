@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { User, TrendingUp, Package, DollarSign, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink, Settings, Eye, EyeOff, Check, Gift, Copy, CheckCheck } from 'lucide-react'
+import { User, TrendingUp, Package, CreditCard, Clock, Zap, ChevronDown, ChevronUp, ExternalLink, Settings, Eye, EyeOff, Check, Gift, Copy, CheckCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
 import Link from 'next/link'
@@ -465,7 +465,7 @@ function ProfilePageInner() {
               </button>
             </div>
           ) : (
-            <p className="text-slate-500 text-sm">Referral code not yet generated — try logging out and back in.</p>
+            <p className="text-slate-500 text-sm">Generating your referral code — try refreshing the page.</p>
           )}
 
           {/* Stats */}

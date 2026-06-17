@@ -112,7 +112,7 @@ function ReferralsInner() {
               </button>
             </div>
           ) : (
-            <p className="text-slate-500 text-sm">Referral code not yet generated — log out and back in to generate one.</p>
+            <p className="text-slate-500 text-sm">Generating your referral code — try refreshing the page.</p>
           )}
 
           {/* Stats */}
