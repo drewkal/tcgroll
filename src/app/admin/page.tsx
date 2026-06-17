@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Shield, Users, Package, DollarSign, TrendingUp, Edit, Receipt, Truck, Layers, AlertCircle, ArrowUp, ArrowDown, Minus, Share2, Palette, Swords, ChevronRight } from 'lucide-react'
 import { SeedBotsButton } from './seed-bots-button'
 import { EditBalanceButton } from './edit-balance-button'
+import { EmailBlastButton } from './email-blast-button'
 
 async function getAdminData() {
   const now = new Date()
@@ -317,9 +318,12 @@ export default async function AdminPage() {
             <Users size={20} className="text-yellow-400" />
             RECENT USERS
           </h2>
-          <Link href="/admin/users" className="text-xs font-mono text-yellow-400 hover:text-yellow-300 transition-colors flex items-center gap-1">
-            View all <ChevronRight size={13} />
-          </Link>
+          <div className="flex items-center gap-3">
+            <EmailBlastButton />
+            <Link href="/admin/users" className="text-xs font-mono text-yellow-400 hover:text-yellow-300 transition-colors flex items-center gap-1">
+              View all <ChevronRight size={13} />
+            </Link>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
