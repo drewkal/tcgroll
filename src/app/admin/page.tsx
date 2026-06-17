@@ -33,6 +33,7 @@ async function getAdminData() {
     recentOpenings,
     openBattles,
     completedBattles,
+    latestOpenings,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.caseOpening.count(),
@@ -59,6 +60,18 @@ async function getAdminData() {
     }),
     prisma.battle.count({ where: { status: 'WAITING' } }),
     prisma.battle.count({ where: { status: 'COMPLETE' } }),
+    prisma.caseOpening.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+      select: {
+        id: true,
+        createdAt: true,
+        totalCost: true,
+        user: { select: { name: true, email: true } },
+        case: { select: { name: true } },
+        openingCards: { select: { card: { select: { value: true, rarity: true } } } },
+      },
+    }),
   ])
 
   // Bucket openings into 14 daily slots
@@ -80,6 +93,7 @@ async function getAdminData() {
     revenueLastWeek: revenueLastWeek._sum.amount ?? 0,
     pendingWithdrawals,
     openingsByDay,
+    latestOpenings,
     openBattles,
     completedBattles,
   }
@@ -306,6 +320,60 @@ export default async function AdminPage() {
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Recent openings */}
+      <div className="glass rounded-2xl border border-white/5 p-6">
+        <h2 className="font-display text-2xl text-white tracking-wide flex items-center gap-2 mb-6">
+          <Package size={20} className="text-yellow-400" />
+          RECENT OPENINGS
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left border-b border-white/5">
+                {['User', 'Case', 'Cards', 'Value', 'Cost', 'P&L', 'Date'].map(h => (
+                  <th key={h} className="pb-3 pr-4 text-xs font-mono text-slate-500 tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/3">
+              {data.latestOpenings.length === 0 ? (
+                <tr><td colSpan={7} className="py-8 text-center text-slate-500">No openings yet</td></tr>
+              ) : data.latestOpenings.map(o => {
+                const totalValue = o.openingCards.reduce((s, oc) => s + oc.card.value, 0)
+                const pnl = totalValue - o.totalCost
+                const bestRarity = ['LEGENDARY','EPIC','RARE','UNCOMMON','COMMON'].find(r =>
+                  o.openingCards.some(oc => oc.card.rarity === r)
+                ) ?? 'COMMON'
+                const rarityColors: Record<string, string> = {
+                  LEGENDARY: '#f59e0b', EPIC: '#a855f7', RARE: '#3b82f6', UNCOMMON: '#22c55e', COMMON: '#9ca3af',
+                }
+                return (
+                  <tr key={o.id} className="hover:bg-white/2 transition-colors">
+                    <td className="py-3 pr-4">
+                      <div className="text-white font-medium">{o.user.name ?? '—'}</div>
+                      <div className="text-xs text-slate-500 font-mono">{o.user.email}</div>
+                    </td>
+                    <td className="py-3 pr-4 text-slate-300">{o.case.name}</td>
+                    <td className="py-3 pr-4">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: rarityColors[bestRarity] }} />
+                        <span className="text-slate-300">{o.openingCards.length}</span>
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 font-mono text-yellow-400">{formatCurrency(totalValue)}</td>
+                    <td className="py-3 pr-4 font-mono text-slate-400">{formatCurrency(o.totalCost)}</td>
+                    <td className={`py-3 pr-4 font-mono font-semibold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
+                    </td>
+                    <td className="py-3 text-slate-500 text-xs font-mono">{formatDate(o.createdAt)}</td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
