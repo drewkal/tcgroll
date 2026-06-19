@@ -71,6 +71,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async createUser({ user }) {
       if (!user.id) return
+
+      // Credentials users have a password set — their tokens come from email verification, not here
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { password: true },
+      })
+      if (dbUser?.password) return
+
+      // OAuth user (Google etc.) — grant tokens and referral code immediately
       const referralCode = await uniqueRefCode(user.name)
       await prisma.user.update({ where: { id: user.id }, data: { balance: 500, referralCode } })
       await prisma.transaction.create({
