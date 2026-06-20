@@ -56,7 +56,7 @@ export async function seedBotBattles(maxNew = 3): Promise<{ created: number }> {
     const wager    = BOT_WAGERS[Math.floor(Math.random() * BOT_WAGERS.length)]
 
     await prisma.battle.create({
-      data: { caseId: cardCase.id, creatorId: bot.id, wager, expiresAt: new Date(Date.now() + 30 * 60 * 1000) },
+      data: { caseId: cardCase.id, creatorId: bot.id, wager, expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000) },
     })
     await prisma.user.update({ where: { id: bot.id }, data: { balance: { decrement: cardCase.price + wager } } })
     created++
