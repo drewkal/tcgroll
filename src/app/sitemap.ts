@@ -10,18 +10,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ])
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE,          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${BASE}/cases`,   lastModified: new Date(), changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${BASE}/cases/pokemon`,     lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE}/cases/one-piece`,   lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE}/cases/magic`,       lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE}/cases/dragon-ball`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE}/cards`,   lastModified: new Date(), changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${BASE}/fair`,    lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE}/about`,   lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${BASE}/faq`,     lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${BASE}/terms`,   lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${BASE}/privacy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: BASE,                          lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${BASE}/cases`,               lastModified: new Date(), changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${BASE}/cases/pokemon`,       lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${BASE}/cases/one-piece`,     lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${BASE}/cases/magic`,         lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${BASE}/cases/dragon-ball`,   lastModified: new Date(), changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${BASE}/cards`,               lastModified: new Date(), changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${BASE}/battles`,             lastModified: new Date(), changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${BASE}/exchange`,            lastModified: new Date(), changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${BASE}/how-it-works`,        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${BASE}/card-quality`,        lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE}/referrals`,           lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE}/fair`,                lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${BASE}/about`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/faq`,                 lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${BASE}/terms`,               lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${BASE}/privacy`,             lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ]
 
   const casePages: MetadataRoute.Sitemap = cases.map(c => ({
