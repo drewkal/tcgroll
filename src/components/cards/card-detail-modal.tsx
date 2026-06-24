@@ -1,6 +1,6 @@
 // src/components/cards/card-detail-modal.tsx
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { formatCurrency, getRarityLabel, getPokemonTypeColor } from '@/lib/utils'
@@ -32,6 +32,10 @@ const rarityBg: Record<string, string> = {
 }
 
 export function CardDetailModal({ card, onClose }: Props) {
+  const [tilt, setTilt]   = useState({ x: 0, y: 0 })
+  const [shine, setShine] = useState({ x: 50, y: 50 })
+  const imgRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!card) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -44,6 +48,20 @@ export function CardDetailModal({ card, onClose }: Props) {
   const rarityColor = getRarityColor(card.rarity)
   const isPokemon   = !card.game || card.game === 'POKEMON'
   const typeColor   = getPokemonTypeColor(card.pokemonType)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = imgRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = (e.clientX - rect.left) / rect.width
+    const py = (e.clientY - rect.top)  / rect.height
+    setTilt({ x: (py - 0.5) * -22, y: (px - 0.5) * 22 })
+    setShine({ x: px * 100, y: py * 100 })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 })
+    setShine({ x: 50, y: 50 })
+  }
 
   return createPortal(
     <div
@@ -70,8 +88,17 @@ export function CardDetailModal({ card, onClose }: Props) {
           <X size={16} />
         </button>
 
-        {/* Card image */}
-        <div className="relative w-full aspect-[3/4] bg-black/20">
+        {/* Card image — tilt zone */}
+        <div
+          ref={imgRef}
+          className="relative w-full aspect-[3/4] bg-black/20 cursor-pointer"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            transform: `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.5s ease' : 'transform 0.08s ease',
+          }}
+        >
           {card.imageUrl ? (
             <img src={card.imageUrl} alt={card.name} className="w-full h-full object-contain p-4" />
           ) : (
@@ -84,6 +111,15 @@ export function CardDetailModal({ card, onClose }: Props) {
               </div>
             </div>
           )}
+          {/* Shine overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none rounded-t-3xl"
+            style={{
+              background: `radial-gradient(circle at ${shine.x}% ${shine.y}%, rgba(255,255,255,0.14) 0%, transparent 60%)`,
+              opacity: tilt.x === 0 && tilt.y === 0 ? 0 : 1,
+              transition: 'opacity 0.2s ease',
+            }}
+          />
           {/* Type badge — Pokémon only */}
           {isPokemon && (
             <div
