@@ -1,7 +1,7 @@
 // src/components/cards/card-display.tsx
 'use client'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Expand } from 'lucide-react'
 import { Card } from '@prisma/client'
 import { cn, formatCurrency, getRarityLabel, getPokemonTypeColor } from '@/lib/utils'
@@ -41,25 +41,55 @@ const rarityGlowClass: Record<string, string> = {
 
 export function CardDisplay({ card, size = 'md', selected, onSelect, showSell }: CardDisplayProps) {
   const [showModal, setShowModal] = useState(false)
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [shine, setShine] = useState({ x: 50, y: 50 })
+  const cardRef = useRef<HTMLDivElement>(null)
   const sizes = sizeMap[size]
   const rarityColor = getRarityColor(card.rarity)
   const isPokemon = !card.game || card.game === 'POKEMON'
   const typeColor = getPokemonTypeColor(card.pokemonType)
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = cardRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = (e.clientX - rect.left) / rect.width   // 0–1
+    const py = (e.clientY - rect.top)  / rect.height  // 0–1
+    setTilt({ x: (py - 0.5) * -18, y: (px - 0.5) * 18 })
+    setShine({ x: px * 100, y: py * 100 })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 })
+    setShine({ x: 50, y: 50 })
+  }
+
   return (
     <>
     <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className={cn(
-        'relative flex flex-col rounded-xl border-2 bg-gradient-to-b overflow-hidden cursor-pointer transition-all duration-300 group',
+        'relative flex flex-col rounded-xl border-2 bg-gradient-to-b overflow-hidden cursor-pointer group',
         sizes.card,
         rarityBg[card.rarity] ?? rarityBg.COMMON,
         rarityGlowClass[card.rarity],
-        selected && 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-navy-900 scale-105',
-        onSelect && 'hover:scale-105',
-        card.rarity === 'LEGENDARY' && 'holo-card',
+        selected && 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-navy-900',
       )}
+      style={{
+        transform: `perspective(700px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${selected ? 'scale(1.05)' : ''}`,
+        transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.45s ease' : 'transform 0.08s ease',
+      }}
       onClick={onSelect}
     >
+      {/* Shine overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl"
+        style={{
+          background: `radial-gradient(circle at ${shine.x}% ${shine.y}%, rgba(255,255,255,0.12) 0%, transparent 65%)`,
+        }}
+      />
+
       {/* Rarity stripe at top */}
       <div
         className="absolute top-0 left-0 right-0 h-0.5"
