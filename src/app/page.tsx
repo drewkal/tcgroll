@@ -14,6 +14,7 @@ import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSettings } from '@/lib/settings'
 import { Logo } from '@/components/logo'
 import { RecentPullsTicker } from '@/components/recent-pulls-ticker'
+import { DemoRoll } from '@/components/demo-roll'
 
 const TOP_CARDS_INCLUDE = {
   caseCards: {
@@ -53,6 +54,22 @@ async function getGameCards() {
   return Object.fromEntries(games.map((g, i) => [g, results[i]])) as Record<string, { id: string; name: string; imageUrl: string | null; rarity: string; game: string }[]>
 }
 
+async function getDemoCase() {
+  return prisma.cardCase.findFirst({
+    where: { active: true, featured: true },
+    select: {
+      name: true,
+      caseCards: {
+        select: {
+          dropRate: true,
+          card: { select: { id: true, name: true, imageUrl: true, rarity: true, value: true } },
+        },
+      },
+    },
+    orderBy: { price: 'asc' },
+  })
+}
+
 async function getSiteStats() {
   const [totalOpenings, totalUsers] = await Promise.all([
     prisma.caseOpening.count(),
@@ -62,12 +79,13 @@ async function getSiteStats() {
 }
 
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, gameCards, settings] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, settings, demoCase] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getGameCards(),
     getSettings(['hero_banner', 'logo_header']),
+    getDemoCase(),
   ])
 
   return (
@@ -162,6 +180,11 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Demo Roll */}
+      {demoCase && (
+        <DemoRoll caseName={demoCase.name} caseCards={demoCase.caseCards} />
       )}
 
       {/* Game Sections */}
