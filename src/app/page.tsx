@@ -76,7 +76,7 @@ export default async function HomePage() {
       <RecentPullsTicker />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-2 pb-16 px-4">
+      <section className="relative overflow-hidden pt-2 pb-8 px-4">
         {/* Hero background image */}
         {settings.hero_banner && (
           <div className="absolute inset-0 pointer-events-none">
@@ -93,70 +93,76 @@ export default async function HomePage() {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-yellow-400/5 blur-3xl animate-pulse" />
           <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-blue-500/5 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-1/4 left-1/2 w-80 h-80 rounded-full bg-purple-500/4 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
         <div className="relative max-w-5xl mx-auto text-center">
           {/* Logo */}
           <div className="flex justify-center mb-2">
             {settings.logo_header
-              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={280} className="h-[160px] sm:h-[220px] md:h-[280px] w-auto object-contain" unoptimized />
+              ? <Image src={settings.logo_header} alt="TCGRoll" width={2000} height={180} className="h-[90px] sm:h-[130px] md:h-[180px] w-auto object-contain" unoptimized />
               : <Logo size="hero" />}
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs sm:text-sm font-mono mb-3 animate-bounce-slow">
-            <Zap size={12} className="fill-yellow-400" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-mono mb-2 animate-bounce-slow">
+            <Zap size={11} className="fill-yellow-400" />
             Pokémon · One Piece · Magic · Dragon Ball
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-9xl tracking-wider text-white mb-3 leading-none">
+          <h1 className="font-display text-3xl sm:text-5xl md:text-7xl tracking-wider text-white mb-2 leading-none">
             CHASE THE{' '}
             <span className="text-glow-gold text-yellow-400">GRAIL.</span>
           </h1>
 
-          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto mb-5 font-light leading-relaxed px-2">
-            Open TCG cases with real rarity odds. Win real cards shipped straight to your door —
-            pull legendary holos, build your collection, and sell duplicates for balance.
+          <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto mb-4 font-light leading-relaxed px-2">
+            Open TCG cases with real rarity odds. Win real cards shipped to your door —
+            pull legendary holos, build your collection, or sell for balance.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-6 px-2">
-            {[
-              { icon: '📦', text: 'Physical cards shipped to you' },
-              { icon: '🎯', text: 'Published drop rates' },
-              { icon: '⚡', text: 'Instant digital reveal' },
-            ].map(({ icon, text }) => (
-              <div key={text} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs sm:text-sm font-mono">
-                <span>{icon}</span>
-                {text}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <Link href="/register" className="w-full sm:w-auto relative btn-gold px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
-              <Zap size={18} className="fill-black" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4">
+            <Link href="/register" className="w-full sm:w-auto relative btn-gold px-7 py-3 rounded-xl text-base font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
+              <Zap size={16} className="fill-black" />
               Start Free — 🪙 500 Bonus
             </Link>
-            <Link href="/cases" className="w-full sm:w-auto px-8 py-4 rounded-xl text-base sm:text-lg font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
+            <Link href="/cases" className="w-full sm:w-auto px-7 py-3 rounded-xl text-base font-display tracking-widest border border-white/15 text-slate-300 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all flex items-center justify-center gap-2 group">
               Browse Cases
-              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform text-slate-400" />
+              <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform text-slate-400" />
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-8 sm:gap-12 mt-6 sm:mt-8">
+          <div className="flex items-center justify-center gap-8 sm:gap-12">
             {[
               { label: 'Cases Opened', value: stats.totalOpenings.toLocaleString() },
               { label: 'Trainers', value: stats.totalUsers.toLocaleString() },
               { label: 'Card Games', value: '4' },
             ].map(({ label, value }) => (
               <div key={label} className="text-center">
-                <div className="font-display text-2xl sm:text-3xl md:text-4xl text-yellow-400 text-glow-gold">{value}</div>
-                <div className="text-[10px] sm:text-xs text-slate-500 font-mono uppercase tracking-widest mt-1">{label}</div>
+                <div className="font-display text-xl sm:text-2xl md:text-3xl text-yellow-400 text-glow-gold">{value}</div>
+                <div className="text-[10px] sm:text-xs text-slate-500 font-mono uppercase tracking-widest mt-0.5">{label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Featured Cases — above the fold */}
+      {featuredCases.length > 0 && (
+        <section className="px-4 pb-10 max-w-7xl mx-auto">
+          <div className="flex items-end justify-between mb-5">
+            <div>
+              <p className="text-yellow-400 font-mono text-xs tracking-widest mb-1">— FEATURED</p>
+              <h2 className="font-display text-2xl md:text-3xl tracking-wide text-white">FEATURED CASES</h2>
+            </div>
+            <Link href="/cases" className="text-slate-400 hover:text-yellow-400 transition-colors flex items-center gap-1 text-sm font-mono">
+              View All <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {featuredCases.map((cardCase: typeof featuredCases[0]) => (
+              <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} featured />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Game Sections */}
       <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto space-y-12 md:space-y-16">
@@ -218,26 +224,6 @@ export default async function HomePage() {
           )
         })}
       </section>
-
-      {/* Featured Cases */}
-      {featuredCases.length > 0 && (
-        <section className="px-4 py-12 md:py-20 max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-8 md:mb-10">
-            <div>
-              <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— FEATURED</p>
-              <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white">FEATURED CASES</h2>
-            </div>
-            <Link href="/cases" className="text-slate-400 hover:text-yellow-400 transition-colors flex items-center gap-1 text-sm font-mono">
-              View All <ChevronRight size={14} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {featuredCases.map((cardCase: typeof featuredCases[0]) => (
-              <CaseCard key={cardCase.id} cardCase={cardCase} topCards={(cardCase as any).caseCards} featured />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* How It Works */}
       <section className="px-4 py-12 md:py-20">
