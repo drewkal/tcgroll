@@ -313,6 +313,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
   const [revealingCard,  setRevealingCard]  = useState<Card | null>(null)
   const [revealExiting,  setRevealExiting]  = useState(false)
   const [showLowBalance, setShowLowBalance] = useState(false)
+  const [isDemo,         setIsDemo]         = useState(false)
 
   const balance   = currentBalance ?? session?.user?.balance ?? 0
   const canAfford = balance >= cardCase.price
@@ -326,7 +327,25 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
 
   const handleOpen = useCallback(async () => {
     if (openingRef.current || phase !== 'idle') return
-    if (!session) { router.push('/login'); return }
+
+    // Guest demo — pick a winner client-side, skip the API
+    if (!session) {
+      const pool: Card[] = []
+      for (const { card, dropRate } of cardCase.caseCards) {
+        const n = Math.max(1, Math.round(dropRate))
+        for (let i = 0; i < n; i++) pool.push(card)
+      }
+      const winner = pool[Math.floor(Math.random() * pool.length)]
+      setIsDemo(true)
+      setWinningCards([winner])
+      setUserCardIds([])
+      setRevealedCards([])
+      setSpinIndex(0)
+      setSelectedToSell(new Set())
+      setPhase('spinning')
+      return
+    }
+
     if (!canAfford) { toast.error('Insufficient balance. Add funds in your profile.'); return }
 
     openingRef.current = true
@@ -460,12 +479,14 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                 <span className="text-slate-400">Total opens</span>
                 <span className="font-mono text-white">{cardCase._count.openings.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Your balance</span>
-                <span className={cn('font-mono font-bold', canAfford ? 'text-yellow-400' : 'text-red-400')}>
-                  {formatCurrency(balance)}
-                </span>
-              </div>
+              {session && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-400">Your balance</span>
+                  <span className={cn('font-mono font-bold', canAfford ? 'text-yellow-400' : 'text-red-400')}>
+                    {formatCurrency(balance)}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -530,10 +551,10 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
 
           {phase === 'done' && (
             <button
-              onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setUserCardIds([]); setSpinIndex(0); setSelectedToSell(new Set()) }}
+              onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setUserCardIds([]); setSpinIndex(0); setSelectedToSell(new Set()); setIsDemo(false) }}
               className="w-full py-3 rounded-xl border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-all font-mono text-sm flex items-center justify-center gap-2"
             >
-              <RotateCcw size={14} /> Open Again
+              <RotateCcw size={14} /> {isDemo ? 'Try Again' : 'Open Again'}
             </button>
           )}
         </div>
@@ -560,20 +581,27 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
 
               <button
                 onClick={handleOpen}
-                disabled={!canAfford}
+                disabled={!!session && !canAfford}
                 className={cn(
                   'w-full py-5 rounded-2xl font-display text-2xl tracking-widest transition-all duration-300',
                   'flex items-center justify-center gap-3',
-                  canAfford
+                  (!session || canAfford)
                     ? 'btn-gold shadow-gold-glow hover:shadow-gold-glow animate-glow-pulse'
                     : 'bg-navy-700 text-slate-500 cursor-not-allowed border border-white/5',
                 )}
               >
-                {canAfford
-                  ? <><Zap size={24} className="fill-black" /> OPEN — {formatCurrency(cardCase.price)}</>
-                  : <Link href="/profile" className="text-sm text-slate-400">Add Funds in Profile</Link>
+                {!session
+                  ? <><Zap size={24} className="fill-black" /> TRY FREE ROLL</>
+                  : canAfford
+                    ? <><Zap size={24} className="fill-black" /> OPEN — {formatCurrency(cardCase.price)}</>
+                    : <Link href="/profile" className="text-sm text-slate-400">Add Funds in Profile</Link>
                 }
               </button>
+              {!session && (
+                <p className="text-center text-xs text-slate-500 font-mono -mt-2">
+                  No account needed · <Link href="/register" className="text-yellow-400 hover:underline">Sign up free</Link> to play for real
+                </p>
+              )}
             </div>
           )}
 
@@ -701,6 +729,35 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
               </div>
 
               {/* Summary + actions */}
+              {isDemo ? (
+                <div className="rounded-2xl border border-yellow-400/30 bg-yellow-400/5 p-5 text-center space-y-3">
+                  <div className="text-xs font-mono text-slate-500 tracking-widest">DEMO ROLL — NOT SAVED</div>
+                  <div className="font-display text-xl text-white tracking-wide">Play for real cards</div>
+                  <p className="text-sm text-slate-400 max-w-sm mx-auto">
+                    Create a free account and get{' '}
+                    <span className="text-yellow-400 font-semibold">🪙 500 bonus tokens</span>.
+                    Open real cases — win physical cards shipped to your door.
+                  </p>
+                  <Link
+                    href="/register"
+                    className="btn-gold inline-flex items-center gap-2 px-7 py-3 rounded-xl font-display tracking-widest shadow-gold-glow"
+                  >
+                    <Zap size={16} className="fill-black" />
+                    Claim 500 Free Tokens
+                  </Link>
+                  <div className="flex items-center justify-center gap-4 pt-1">
+                    <button
+                      onClick={() => { setPhase('idle'); setRevealedCards([]); setWinningCards([]); setSpinIndex(0); setIsDemo(false) }}
+                      className="text-xs text-slate-500 hover:text-slate-300 transition-colors font-mono inline-flex items-center gap-1.5"
+                    >
+                      <RotateCcw size={11} /> Roll again
+                    </button>
+                    <Link href="/login" className="text-xs text-slate-500 hover:text-yellow-400 transition-colors font-mono">
+                      Sign in
+                    </Link>
+                  </div>
+                </div>
+              ) : (
               <div className="glass rounded-2xl border border-white/5 p-5 space-y-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
@@ -720,7 +777,6 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
-                  {/* Sell all */}
                   <button
                     onClick={handleSellAll}
                     disabled={isSelling}
@@ -730,7 +786,6 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                     SELL ALL — {formatCurrency(totalValue)}
                   </button>
 
-                  {/* Sell selected */}
                   {selectedToSell.size > 0 && (
                     <button
                       onClick={handleSellSelected}
@@ -763,6 +818,7 @@ export function CaseOpeningClient({ cardCase, recentPulls }: Props) {
                   </button>
                 </div>
               </div>
+              )}
             </div>
           )}
         </div>
