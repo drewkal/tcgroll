@@ -5,7 +5,7 @@ import { signIn, getProviders } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { Zap, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { Zap, Mail, Lock, User, Eye, EyeOff, Package, Shield, TrendingUp } from 'lucide-react'
 
 function GoogleIcon() {
   return (
@@ -22,7 +22,7 @@ function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const refCode = searchParams.get('ref') ?? undefined
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -47,10 +47,6 @@ function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (form.password !== form.confirm) {
-      toast.error('Passwords do not match')
-      return
-    }
     if (form.password.length < 8) {
       toast.error('Password must be at least 8 characters')
       return
@@ -68,12 +64,7 @@ function RegisterForm() {
         return
       }
       toast.success(data.message ?? 'Account created!')
-      // Auto sign in
-      await signIn('credentials', {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      })
+      await signIn('credentials', { email: form.email, password: form.password, redirect: false })
       router.push('/cases')
     } catch {
       toast.error('Something went wrong')
@@ -83,14 +74,32 @@ function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-20">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-600 flex items-center justify-center shadow-gold-glow mx-auto mb-4">
-            <Zap size={28} className="text-black fill-black" />
+
+        {/* Bonus badge */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400/15 border border-yellow-400/40 text-yellow-400 font-mono text-sm mb-4 animate-bounce-slow">
+            <Zap size={14} className="fill-yellow-400" />
+            Free sign-up · 🪙 500 tokens on your first case
           </div>
           <h1 className="font-display text-4xl tracking-wide text-white">JOIN TCGROLL</h1>
-          <p className="text-slate-400 text-sm mt-2">Create your account and verify your email to receive <span className="text-yellow-400 font-semibold">🪙 500 free tokens</span></p>
+          <p className="text-slate-400 text-sm mt-2">Open real TCG cases. Win physical cards shipped to you.</p>
+        </div>
+
+        {/* What you get */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {[
+            { icon: Zap, label: '500 free tokens', sub: 'on sign up' },
+            { icon: Package, label: 'Physical cards', sub: 'shipped to you' },
+            { icon: TrendingUp, label: 'Sell for balance', sub: 'keep or cash out' },
+          ].map(({ icon: Icon, label, sub }) => (
+            <div key={label} className="glass rounded-xl border border-white/5 p-3 text-center">
+              <Icon size={18} className="text-yellow-400 mx-auto mb-1" />
+              <div className="text-white text-xs font-medium leading-tight">{label}</div>
+              <div className="text-slate-500 text-[10px] font-mono mt-0.5">{sub}</div>
+            </div>
+          ))}
         </div>
 
         <div className="glass rounded-2xl border border-white/5 p-8 space-y-5">
@@ -102,13 +111,13 @@ function RegisterForm() {
                 type="button"
                 onClick={handleGoogle}
                 disabled={googleLoading || loading}
-                className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all disabled:opacity-50"
               >
                 {googleLoading
                   ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   : <GoogleIcon />
                 }
-                Sign up with Google
+                Continue with Google
               </button>
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-white/10" />
@@ -118,68 +127,81 @@ function RegisterForm() {
             </>
           )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {[
-            { key: 'name', label: 'TRAINER NAME', type: 'text', icon: User, placeholder: 'Ash Ketchum' },
-            { key: 'email', label: 'EMAIL', type: 'email', icon: Mail, placeholder: 'trainer@example.com' },
-          ].map(({ key, label, type, icon: Icon, placeholder }) => (
-            <div key={key}>
-              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">{label}</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">TRAINER NAME</label>
               <div className="relative">
-                <Icon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
-                  type={type}
-                  value={form[key as keyof typeof form]}
-                  onChange={set(key as keyof typeof form)}
+                  type="text"
+                  value={form.name}
+                  onChange={set('name')}
                   required
-                  placeholder={placeholder}
+                  placeholder="Ash Ketchum"
                   className="w-full bg-navy-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-400/50 transition-colors text-sm"
                 />
               </div>
             </div>
-          ))}
 
-          {['password', 'confirm'].map((key, i) => (
-            <div key={key}>
-              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">
-                {i === 0 ? 'PASSWORD' : 'CONFIRM PASSWORD'}
-              </label>
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">EMAIL</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={set('email')}
+                  required
+                  placeholder="trainer@example.com"
+                  className="w-full bg-navy-800 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-400/50 transition-colors text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-mono text-slate-400 tracking-wider mb-2">PASSWORD</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type={showPass ? 'text' : 'password'}
-                  value={form[key as keyof typeof form]}
-                  onChange={set(key as keyof typeof form)}
+                  value={form.password}
+                  onChange={set('password')}
                   required
                   minLength={8}
-                  placeholder="••••••••"
+                  placeholder="At least 8 characters"
                   className="w-full bg-navy-800 border border-white/10 rounded-xl pl-10 pr-12 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-yellow-400/50 transition-colors text-sm"
                 />
-                {i === 0 && (
-                  <button type="button" onClick={() => setShowPass(!showPass)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
-                    {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                )}
+                <button type="button" onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
-          ))}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-gold w-full py-3.5 rounded-xl font-display tracking-widest text-lg flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading
-              ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              : <><Zap size={18} className="fill-black" /> CREATE ACCOUNT</>}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-gold w-full py-4 rounded-xl font-display tracking-widest text-lg flex items-center justify-center gap-2 disabled:opacity-50 shadow-gold-glow"
+            >
+              {loading
+                ? <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                : <><Zap size={18} className="fill-black" /> CLAIM FREE TOKENS</>
+              }
+            </button>
 
-          <p className="text-center text-sm text-slate-400">
-            Already a trainer?{' '}
-            <Link href="/login" className="text-yellow-400 hover:text-yellow-300 transition-colors">Sign in</Link>
-          </p>
-        </form>
+            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+              <Shield size={11} />
+              No credit card · Free to join · Cancel anytime
+            </div>
+
+            <p className="text-center text-sm text-slate-400">
+              Already a trainer?{' '}
+              <Link href="/login" className="text-yellow-400 hover:text-yellow-300 transition-colors">Sign in</Link>
+            </p>
+          </form>
         </div>
       </div>
     </div>
