@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import { Search, ChevronLeft, ChevronRight, Users, ArrowLeft } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Users, ArrowLeft, MoveRight } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { EditBalanceButton } from '@/app/admin/edit-balance-button'
@@ -67,19 +67,23 @@ export function AdminUsersClient() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/5">
-                {['Name', 'Email', 'Balance', 'Verified', 'Role', 'Joined'].map(h => (
+                {['Name', 'Email', 'Balance', 'Verified', 'Role', 'Joined', ''].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-mono text-slate-500 tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/3">
               {loading ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500 font-mono text-sm">Loading…</td></tr>
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500 font-mono text-sm">Loading…</td></tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500 font-mono text-sm">No users found</td></tr>
+                <tr><td colSpan={7} className="px-5 py-12 text-center text-slate-500 font-mono text-sm">No users found</td></tr>
               ) : users.map(u => (
-                <tr key={u.id} className="hover:bg-white/2 transition-colors">
-                  <td className="px-5 py-3 text-white font-medium whitespace-nowrap">{u.name ?? '—'}</td>
+                <tr key={u.id} className="hover:bg-white/2 transition-colors group">
+                  <td className="px-5 py-3 text-white font-medium whitespace-nowrap">
+                    <Link href={`/admin/users/${u.id}`} className="hover:text-yellow-400 transition-colors">
+                      {u.name ?? '—'}
+                    </Link>
+                  </td>
                   <td className="px-5 py-3 text-slate-400 font-mono text-xs">{u.email}</td>
                   <td className="px-5 py-3 font-mono text-yellow-400 whitespace-nowrap">
                     {formatCurrency(u.balance)}
@@ -96,6 +100,11 @@ export function AdminUsersClient() {
                     </span>
                   </td>
                   <td className="px-5 py-3 text-slate-500 text-xs font-mono whitespace-nowrap">{formatDate(new Date(u.createdAt))}</td>
+                  <td className="px-5 py-3">
+                    <Link href={`/admin/users/${u.id}`} className="text-slate-600 hover:text-yellow-400 transition-colors opacity-0 group-hover:opacity-100">
+                      <MoveRight size={14} />
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
