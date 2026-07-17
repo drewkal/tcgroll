@@ -43,6 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         if (!user || !user.password) return null
+        if (user.banned) return null
 
         const isValid = await bcrypt.compare(
           credentials.password as string,
@@ -102,6 +103,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   callbacks: {
+    async signIn({ user }) {
+      if (!user.id) return true
+      const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { banned: true } })
+      return !dbUser?.banned
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
@@ -111,12 +117,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.id) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { balance: true, role: true, emailVerified: true },
+          select: { balance: true, role: true, emailVerified: true, banned: true },
         })
         if (dbUser) {
           token.balance = dbUser.balance
           token.role = dbUser.role
           token.emailVerified = dbUser.emailVerified
+          token.banned = dbUser.banned
         }
       }
       return token

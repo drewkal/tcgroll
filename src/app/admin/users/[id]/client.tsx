@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { ArrowLeft, User, Mail, Shield, Zap, Package, CreditCard, Gift, Wifi, ExternalLink, CheckCircle, XCircle } from 'lucide-react'
+import { ArrowLeft, User, Mail, Shield, Zap, Package, CreditCard, Gift, Wifi, ExternalLink, CheckCircle, XCircle, Ban } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { EditBalanceButton } from '@/app/admin/edit-balance-button'
@@ -21,7 +21,8 @@ type UserDetail = {
   role: string; emailVerified: string | null; createdAt: string
   registrationIp: string | null; referralCode: string | null
   referralBonusPaid: boolean; password: string | null; image: string | null
-  accounts: { provider: string; createdAt: string }[]
+  banned: boolean; bannedAt: string | null
+  accounts: { provider: string }[]
   referredBy: { id: string; name: string | null; email: string } | null
   referrals: { id: string; name: string | null; email: string; createdAt: string; referralBonusPaid: boolean }[]
   transactions: Transaction[]
@@ -46,6 +47,7 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
   const [data, setData] = useState<{ user: UserDetail; totalSpent: number; totalDeposited: number } | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'transactions' | 'openings' | 'referrals'>('transactions')
+  const [banning, setBanning] = useState(false)
 
   useEffect(() => {
     fetch(`/api/admin/users/${userId}`)
@@ -72,6 +74,19 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
 
   const { user, totalSpent, totalDeposited } = data
   const isOAuth = user.accounts.length > 0
+
+  const toggleBan = async () => {
+    const action = user.banned ? 'unban' : 'ban'
+    if (!confirm(`Are you sure you want to ${action} this user?`)) return
+    setBanning(true)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/ban`, { method: 'POST' })
+      const json = await res.json()
+      if (res.ok) setData(prev => prev ? { ...prev, user: { ...prev.user, banned: json.banned, bannedAt: json.banned ? new Date().toISOString() : null } } : prev)
+    } finally {
+      setBanning(false)
+    }
+  }
   const oauthProviders = user.accounts.map(a => a.provider)
   const signInMethod = isOAuth ? oauthProviders.join(', ') : 'Email / Password'
 
@@ -95,6 +110,20 @@ export function AdminUserDetailClient({ userId }: { userId: string }) {
             ? <span className="rarity-badge bg-green-500/20 text-green-400 flex items-center gap-1"><CheckCircle size={11} /> Verified</span>
             : <span className="rarity-badge bg-slate-500/20 text-slate-400 flex items-center gap-1"><XCircle size={11} /> Unverified</span>
           }
+          {user.role !== 'ADMIN' && (
+            <button
+              onClick={toggleBan}
+              disabled={banning}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all disabled:opacity-50 ${
+                user.banned
+                  ? 'bg-green-500/15 border border-green-500/30 text-green-400 hover:bg-green-500/25'
+                  : 'bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25'
+              }`}
+            >
+              <Ban size={12} />
+              {banning ? '…' : user.banned ? 'Unban' : 'Ban'}
+            </button>
+          )}
         </div>
       </div>
 

@@ -22,6 +22,8 @@ model User {
   referredById      String?
   registrationIp    String?
   referralBonusPaid Boolean   @default(false)
+  banned            Boolean   @default(false)
+  bannedAt          DateTime?
   createdAt         DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
