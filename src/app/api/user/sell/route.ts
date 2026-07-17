@@ -16,12 +16,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No cards selected' }, { status: 400 })
     }
 
-    // Fetch cards to sell — verify ownership
+    // Deduplicate to prevent the same ID being double-counted
+    const ids: string[] = [...new Set(userCardIds as string[])]
+
+    // Fetch cards to sell — verify ownership and availability
     const userCards = await prisma.userCard.findMany({
       where: {
-        id: { in: userCardIds },
+        id: { in: ids },
         userId: session.user.id,
         sold: false,
+        withdrawn: false,
       },
       include: { card: true },
     })
@@ -33,19 +37,26 @@ export async function POST(req: NextRequest) {
     const totalValue = userCards.reduce((sum, uc) => sum + uc.card.value, 0)
 
     await prisma.$transaction(async (tx) => {
-      // Mark cards as sold
-      await tx.userCard.updateMany({
-        where: { id: { in: userCards.map(uc => uc.id) } },
+      // Re-assert sold: false inside the transaction so concurrent requests
+      // can't both win — the second updateMany will return count: 0 and throw
+      const result = await tx.userCard.updateMany({
+        where: {
+          id: { in: userCards.map(uc => uc.id) },
+          sold: false,
+          withdrawn: false,
+        },
         data: { sold: true, soldAt: new Date() },
       })
 
-      // Credit balance
+      if (result.count !== userCards.length) {
+        throw new Error('CONCURRENT_SELL')
+      }
+
       await tx.user.update({
         where: { id: session.user.id },
         data: { balance: { increment: totalValue } },
       })
 
-      // Record transaction
       await tx.transaction.create({
         data: {
           userId: session.user.id,
@@ -62,6 +73,9 @@ export async function POST(req: NextRequest) {
       totalValue,
     })
   } catch (error) {
+    if ((error as Error).message === 'CONCURRENT_SELL') {
+      return NextResponse.json({ error: 'Some cards were already sold' }, { status: 409 })
+    }
     console.error('Sell error:', error)
     return NextResponse.json({ error: 'Failed to sell cards' }, { status: 500 })
   }
