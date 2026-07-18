@@ -7,6 +7,7 @@ export async function GET(req: NextRequest) {
 
   if (!token) return NextResponse.redirect(`${base}/cases?verified=error`)
 
+  // Validate the token exists and hasn't expired before trying to consume it
   const record = await prisma.verificationToken.findUnique({ where: { token } })
 
   if (!record || record.expires < new Date()) {
@@ -14,13 +15,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${base}/cases?verified=expired`)
   }
 
+  // Delete the token atomically — if two requests race, only one will succeed here.
+  // The other will throw P2025 (record not found) and we redirect as already verified.
+  try {
+    await prisma.verificationToken.delete({ where: { token } })
+  } catch {
+    return NextResponse.redirect(`${base}/cases?verified=1`)
+  }
+
   const user = await prisma.user.findUnique({ where: { email: record.identifier } })
 
   if (!user) return NextResponse.redirect(`${base}/cases?verified=error`)
 
+  // Only grant the bonus if not already verified (idempotency guard)
   if (!user.emailVerified) {
     await prisma.user.update({
-      where: { email: record.identifier },
+      where: { id: user.id },
       data: { emailVerified: new Date(), balance: { increment: 500 } },
     })
     await prisma.transaction.create({
@@ -53,8 +63,6 @@ export async function GET(req: NextRequest) {
       }
     }
   }
-
-  await prisma.verificationToken.delete({ where: { token } }).catch(() => {})
 
   return NextResponse.redirect(`${base}/cases?verified=1`)
 }
