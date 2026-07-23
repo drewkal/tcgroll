@@ -14,6 +14,7 @@ import { ChevronRight, Zap, Shield, TrendingUp, Package } from 'lucide-react'
 import { getSettings } from '@/lib/settings'
 import { Logo } from '@/components/logo'
 import { RecentPullsTicker } from '@/components/recent-pulls-ticker'
+import { HeroOpeningDemo } from '@/components/hero-opening-demo'
 
 const TOP_CARDS_INCLUDE = {
   caseCards: {
@@ -61,13 +62,41 @@ async function getSiteStats() {
   return { totalOpenings, totalUsers }
 }
 
+async function getHeroDemoData() {
+  // Pick the highest-value card from any active case as the showcase winner
+  const showcase = await prisma.card.findFirst({
+    where: { caseCards: { some: { case: { active: true } } } },
+    orderBy: { value: 'desc' },
+    select: { id: true, name: true, imageUrl: true, rarity: true, value: true },
+  })
+  if (!showcase) return null
+
+  // Get a pool of cards from the case that contains the showcase card
+  const heroCase = await prisma.cardCase.findFirst({
+    where: { active: true, caseCards: { some: { cardId: showcase.id } } },
+    include: {
+      caseCards: {
+        include: { card: { select: { id: true, name: true, imageUrl: true, rarity: true, value: true } } },
+        take: 40,
+      },
+    },
+  })
+  if (!heroCase) return null
+
+  return {
+    showcase,
+    entries: heroCase.caseCards.map(cc => ({ card: cc.card, dropRate: cc.dropRate })),
+  }
+}
+
 export default async function HomePage() {
-  const [featuredCases, allCases, stats, gameCards, settings] = await Promise.all([
+  const [featuredCases, allCases, stats, gameCards, settings, heroDemo] = await Promise.all([
     getFeaturedCases(),
     getCasesByGame(),
     getSiteStats(),
     getGameCards(),
     getSettings(['hero_banner', 'logo_header']),
+    getHeroDemoData(),
   ])
 
   return (
@@ -117,7 +146,7 @@ export default async function HomePage() {
             Experience the thrill of pulling Pokémon, One Piece, Magic, and more — with every card available to ship to your door.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6">
             <Link href="/register" className="w-full sm:w-auto relative btn-gold px-7 py-3 rounded-xl text-base font-display tracking-widest flex items-center justify-center gap-2 shadow-gold-glow animate-glow-pulse">
               <Zap size={16} className="fill-black" />
               Start Free — 🪙 500 Bonus
@@ -127,6 +156,12 @@ export default async function HomePage() {
               <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform text-slate-400" />
             </Link>
           </div>
+
+          {heroDemo && (
+            <div className="mb-6 px-2">
+              <HeroOpeningDemo entries={heroDemo.entries} showcase={heroDemo.showcase} />
+            </div>
+          )}
 
           <div className="flex items-center justify-center gap-8 sm:gap-12">
             {[
