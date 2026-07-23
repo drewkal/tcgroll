@@ -108,14 +108,13 @@ export default async function HomePage() {
             Pokémon · One Piece · Magic · Dragon Ball
           </div>
 
-          <h1 className="font-display text-3xl sm:text-5xl md:text-7xl tracking-wider text-white mb-2 leading-none">
-            CHASE THE{' '}
-            <span className="text-glow-gold text-yellow-400">GRAIL.</span>
+          <h1 className="font-display text-3xl sm:text-5xl md:text-7xl tracking-wider text-white mb-2 leading-tight">
+            Open Virtual TCG Cases.{' '}
+            <span className="text-glow-gold text-yellow-400">Win Real Cards.</span>
           </h1>
 
           <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto mb-4 font-light leading-relaxed px-2">
-            Open TCG cases with real rarity odds. Win real cards shipped to your door —
-            pull legendary holos, build your collection, or sell for balance.
+            Experience the thrill of pulling Pokémon, One Piece, Magic, and more — with every card available to ship to your door.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4">
