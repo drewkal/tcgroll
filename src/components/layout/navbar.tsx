@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { useAnimatedNumber } from '@/hooks/use-animated-number'
-import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X, Library, Swords, HelpCircle } from 'lucide-react'
+import { Package, LayoutGrid, ArrowLeftRight, User, LogOut, Shield, Menu, X, Library, Swords, HelpCircle, Plus } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import Image from 'next/image'
 
@@ -54,14 +54,15 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
             {session ? (
               <>
                 {/* Balance + buy tokens */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-yellow-400/20 hover:border-yellow-400/40 transition-colors">
                     <span className="font-mono text-sm text-yellow-400 font-medium tabular-nums">
                       {formatCurrency(animatedBalance)}
                     </span>
                   </Link>
-                  <Link href="/deposit" className="flex items-center justify-center w-7 h-7 rounded-lg bg-yellow-400/10 border border-yellow-400/20 hover:bg-yellow-400/20 hover:border-yellow-400/40 transition-colors text-yellow-400 font-bold text-sm">
-                    +
+                  <Link href="/deposit" className="btn-gold flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-display tracking-wider shadow-gold-glow-sm">
+                    <Plus size={13} strokeWidth={2.5} />
+                    Buy Tokens
                   </Link>
                 </div>
 
@@ -129,6 +130,9 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                   <div className="w-2 h-2 rounded-full bg-yellow-400" />
                   <span className="font-mono text-yellow-400 tabular-nums">{formatCurrency(animatedBalance)}</span>
                 </div>
+                <Link href="/deposit" onClick={() => setMobileOpen(false)} className="btn-gold flex items-center gap-2 px-4 py-3 rounded-lg shadow-gold-glow-sm">
+                  <Plus size={16} strokeWidth={2.5} /> Buy Tokens
+                </Link>
                 <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:text-white hover:bg-white/5">
                   <User size={18} /> Profile
                 </Link>
