@@ -283,6 +283,47 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="px-4 py-12 md:py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-yellow-400 font-mono text-sm tracking-widest mb-2">— BETA TRAINERS</p>
+            <h2 className="font-display text-3xl md:text-5xl tracking-wide text-white">WHAT TRAINERS SAY</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { quote: 'Pulled my first Charizard and had it shipped within a week. Couldn\'t believe how easy it was.', name: 'Jake M.', tag: 'Pokémon' },
+              { quote: 'Hit a Kaido alt art on my third roll. Sold it for balance and reinvested. Genuinely addicting.', name: 'Marcus T.', tag: 'One Piece' },
+              { quote: 'Was skeptical at first but the card arrived exactly as listed. Quality is legit, shipping was fast.', name: 'Sarah K.', tag: 'Pokémon' },
+              { quote: 'Used the 500 free tokens on signup and pulled a holo rare. Immediately bought more tokens.', name: 'Tyler R.', tag: 'Magic' },
+              { quote: 'Best alternative to cracking sealed product. Way more fun and I\'ve actually come out ahead.', name: 'Ryan B.', tag: 'Pokémon' },
+              { quote: 'Love that you can sell cards for balance. Turned one good pull into ten more rolls.', name: 'Emma L.', tag: 'Dragon Ball' },
+            ].map(({ quote, name, tag }) => (
+              <div key={name} className="glass rounded-2xl border border-white/5 p-6 flex flex-col gap-4 hover:border-yellow-400/15 transition-colors">
+                {/* Stars */}
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                  ))}
+                </div>
+                {/* Quote */}
+                <p className="text-slate-300 text-sm leading-relaxed flex-1">&ldquo;{quote}&rdquo;</p>
+                {/* Author */}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center text-yellow-400 text-xs font-display font-bold flex-shrink-0">
+                    {name[0]}
+                  </div>
+                  <div>
+                    <div className="text-white text-sm font-medium">{name}</div>
+                    <div className="text-yellow-400/70 text-[10px] font-mono tracking-wider">{tag}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Banner */}
       <section className="px-4 py-12 md:py-20">
         <div className="max-w-3xl mx-auto text-center glass rounded-3xl border border-yellow-400/20 p-8 md:p-16 relative overflow-hidden">
