@@ -36,54 +36,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
-    const [userCards, wantedCard, user] = await Promise.all([
+    const [userCards, wantedCard] = await Promise.all([
       prisma.userCard.findMany({
         where: { id: { in: userCardIds }, userId: session.user.id, sold: false, withdrawn: false },
         include: { card: true },
       }),
       prisma.card.findUnique({ where: { id: wantedCardId } }),
-      prisma.user.findUnique({ where: { id: session.user.id }, select: { balance: true } }),
     ])
 
     if (userCards.length !== userCardIds.length) {
       return NextResponse.json({ error: 'One or more cards not available' }, { status: 400 })
     }
     if (!wantedCard) return NextResponse.json({ error: 'Requested card not found' }, { status: 400 })
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 400 })
 
     const offeredTotal = userCards.reduce((sum, uc) => sum + uc.card.value, 0)
-    // diff > 0: user wants a more expensive card — they pay the diff
-    // diff < 0: user wants a cheaper card — they receive the diff
     const diff = wantedCard.value - offeredTotal
 
-    if (diff > 0 && user.balance < diff) {
-      return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+    if (diff !== 0) {
+      return NextResponse.json(
+        { error: `Card values must match exactly. Offered: ${offeredTotal.toFixed(2)}, Wanted: ${wantedCard.value.toFixed(2)}` },
+        { status: 400 }
+      )
     }
 
     const cardNames = userCards.map(uc => uc.card.name).join(', ')
 
     await prisma.$transaction(async (tx) => {
-      // Mark all offered cards as sold
       await tx.userCard.updateMany({
         where: { id: { in: userCardIds } },
         data: { sold: true, soldAt: new Date() },
       })
-
-      // Give the user the wanted card
       await tx.userCard.create({ data: { userId: session.user.id, cardId: wantedCardId } })
-
-      // Settle balance difference
-      if (diff !== 0) {
-        await tx.user.update({ where: { id: session.user.id }, data: { balance: { increment: -diff } } })
-        await tx.transaction.create({
-          data: {
-            userId: session.user.id,
-            amount: -diff,
-            type: 'EXCHANGE',
-            description: `Exchanged ${cardNames} for ${wantedCard.name}`,
-          },
-        })
-      }
+      await tx.transaction.create({
+        data: {
+          userId: session.user.id,
+          amount: 0,
+          type: 'EXCHANGE',
+          description: `Exchanged ${cardNames} for ${wantedCard.name}`,
+        },
+      })
     })
 
     return NextResponse.json({ success: true })

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { formatCurrency } from '@/lib/utils'
 import { getRarityColor } from '@/lib/opening-engine'
-import { ArrowLeftRight, Search, Loader2, Check, X, Plus } from 'lucide-react'
+import { ArrowLeftRight, Search, Loader2, Check, X } from 'lucide-react'
 
 type Card = {
   id: string
@@ -107,7 +107,7 @@ function CatalogCardButton({ card, selected, onClick }: {
 }
 
 export default function ExchangePage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
 
   const [inventory, setInventory] = useState<UserCard[]>([])
@@ -167,8 +167,7 @@ export default function ExchangePage() {
   const selectedCards = inventory.filter(uc => selectedIds.has(uc.id))
   const offeredTotal = selectedCards.reduce((sum, uc) => sum + uc.card.value, 0)
   const diff = wantCard ? wantCard.value - offeredTotal : null
-  const balance = session?.user?.balance ?? 0
-  const canExchange = selectedIds.size > 0 && wantCard !== null && !(diff !== null && diff > 0 && balance < diff)
+  const canExchange = selectedIds.size > 0 && wantCard !== null && diff === 0
 
   async function handleExchange() {
     if (!canExchange || !wantCard) return
@@ -206,7 +205,7 @@ export default function ExchangePage() {
         <p className="text-yellow-400 font-mono text-sm tracking-widest mb-1">— CARD SWAP</p>
         <h1 className="font-display text-5xl tracking-wide text-white">EXCHANGE</h1>
         <p className="text-slate-400 text-sm mt-2">
-          Select one or more cards from your collection to trade for any single card in the catalog. Tokens cover the difference.
+          Trade cards from your collection for any card of equal value. No tokens involved — cards only.
         </p>
       </div>
 
@@ -279,13 +278,9 @@ export default function ExchangePage() {
                   <div className="text-slate-400 pt-1">Receiving</div>
                   <div className="text-white">{formatCurrency(wantCard.value)}</div>
                   <div className={`pt-2 px-3 py-1.5 rounded-lg ${
-                    diff === 0 ? 'bg-white/5 text-slate-400'
-                    : diff! > 0 ? 'bg-red-400/10 text-red-400'
-                    : 'bg-green-400/10 text-green-400'
+                    diff === 0 ? 'bg-green-400/10 text-green-400' : 'bg-red-400/10 text-red-400'
                   }`}>
-                    {diff === 0 ? 'Even swap'
-                      : diff! > 0 ? `Pay ${formatCurrency(diff!)}`
-                      : `Get ${formatCurrency(Math.abs(diff!))}`}
+                    {diff === 0 ? 'Even swap ✓' : 'Values must match'}
                   </div>
                 </>
               )}
@@ -300,8 +295,8 @@ export default function ExchangePage() {
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <><ArrowLeftRight size={15} /> Exchange</>}
           </button>
 
-          {diff !== null && diff > 0 && balance < diff && (
-            <p className="text-xs text-red-400 text-center">Need {formatCurrency(diff - balance)} more</p>
+          {diff !== null && diff !== 0 && wantCard && (
+            <p className="text-xs text-red-400 text-center">Values must match exactly</p>
           )}
 
           {selectedIds.size === 0 && (
