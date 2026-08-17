@@ -167,7 +167,7 @@ export default function ExchangePage() {
   const selectedCards = inventory.filter(uc => selectedIds.has(uc.id))
   const offeredTotal = selectedCards.reduce((sum, uc) => sum + uc.card.value, 0)
   const diff = wantCard ? wantCard.value - offeredTotal : null
-  const canExchange = selectedIds.size > 0 && wantCard !== null && diff === 0
+  const canExchange = selectedIds.size > 0 && wantCard !== null && diff !== null && diff <= 0
 
   async function handleExchange() {
     if (!canExchange || !wantCard) return
@@ -180,7 +180,8 @@ export default function ExchangePage() {
       })
       const data = await res.json()
       if (!res.ok) { toast.error(data.error); return }
-      toast.success(`Got ${wantCard.name}!`)
+      const msg = data.refund > 0 ? `Got ${wantCard.name} + ${data.refund} tokens back!` : `Got ${wantCard.name}!`
+      toast.success(msg)
       setSelectedIds(new Set())
       setWantCard(null)
       fetchData()
@@ -205,7 +206,7 @@ export default function ExchangePage() {
         <p className="text-yellow-400 font-mono text-sm tracking-widest mb-1">— CARD SWAP</p>
         <h1 className="font-display text-5xl tracking-wide text-white">EXCHANGE</h1>
         <p className="text-slate-400 text-sm mt-2">
-          Trade cards from your collection for any card of equal value. No tokens involved — cards only.
+          Trade cards from your collection for any card. Overpay with cards and get the difference back as tokens — but you can&apos;t use tokens to cover the gap.
         </p>
       </div>
 
@@ -278,9 +279,13 @@ export default function ExchangePage() {
                   <div className="text-slate-400 pt-1">Receiving</div>
                   <div className="text-white">{formatCurrency(wantCard.value)}</div>
                   <div className={`pt-2 px-3 py-1.5 rounded-lg ${
-                    diff === 0 ? 'bg-green-400/10 text-green-400' : 'bg-red-400/10 text-red-400'
+                    diff === 0 ? 'bg-green-400/10 text-green-400'
+                    : diff! < 0 ? 'bg-yellow-400/10 text-yellow-400'
+                    : 'bg-red-400/10 text-red-400'
                   }`}>
-                    {diff === 0 ? 'Even swap ✓' : 'Values must match'}
+                    {diff === 0 ? 'Even swap ✓'
+                      : diff! < 0 ? `+${formatCurrency(Math.abs(diff!))} back as tokens`
+                      : `Need ${formatCurrency(diff!)} more in cards`}
                   </div>
                 </>
               )}
@@ -295,8 +300,8 @@ export default function ExchangePage() {
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <><ArrowLeftRight size={15} /> Exchange</>}
           </button>
 
-          {diff !== null && diff !== 0 && wantCard && (
-            <p className="text-xs text-red-400 text-center">Values must match exactly</p>
+          {diff !== null && diff > 0 && wantCard && (
+            <p className="text-xs text-red-400 text-center">Add more cards to make up the difference</p>
           )}
 
           {selectedIds.size === 0 && (

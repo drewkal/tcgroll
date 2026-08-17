@@ -50,15 +50,18 @@ export async function POST(req: NextRequest) {
     if (!wantedCard) return NextResponse.json({ error: 'Requested card not found' }, { status: 400 })
 
     const offeredTotal = userCards.reduce((sum, uc) => sum + uc.card.value, 0)
+    // diff > 0 means user is offering less than the card is worth — block it
+    // diff <= 0 means user offered equal or more — allow, refund the surplus as balance
     const diff = wantedCard.value - offeredTotal
 
-    if (diff !== 0) {
+    if (diff > 0) {
       return NextResponse.json(
-        { error: `Card values must match exactly. Offered: ${offeredTotal.toFixed(2)}, Wanted: ${wantedCard.value.toFixed(2)}` },
+        { error: `Offered cards are worth less than the requested card. Add more cards to make up the difference.` },
         { status: 400 }
       )
     }
 
+    const refund = Math.round(-diff) // tokens to credit back (0 for even swap)
     const cardNames = userCards.map(uc => uc.card.name).join(', ')
 
     await prisma.$transaction(async (tx) => {
@@ -67,17 +70,23 @@ export async function POST(req: NextRequest) {
         data: { sold: true, soldAt: new Date() },
       })
       await tx.userCard.create({ data: { userId: session.user.id, cardId: wantedCardId } })
+      if (refund > 0) {
+        await tx.user.update({
+          where: { id: session.user.id },
+          data: { balance: { increment: refund } },
+        })
+      }
       await tx.transaction.create({
         data: {
           userId: session.user.id,
-          amount: 0,
+          amount: refund,
           type: 'EXCHANGE',
-          description: `Exchanged ${cardNames} for ${wantedCard.name}`,
+          description: `Exchanged ${cardNames} for ${wantedCard.name}${refund > 0 ? ` (+${refund} token refund)` : ''}`,
         },
       })
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, refund })
   } catch (e) {
     console.error(e)
     return NextResponse.json({ error: 'Failed to complete exchange' }, { status: 500 })
